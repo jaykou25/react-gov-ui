@@ -76,7 +76,7 @@ const StaffSelect = (props: IProps) => {
         onOk={handleOk}
         onCancel={() => setModalOpen(false)}
       >
-        todo
+        todo ing ing
       </Modal>
     </>
   );
