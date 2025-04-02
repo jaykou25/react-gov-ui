@@ -1,0 +1,34 @@
+{
+  "name": "react-gov-ui",
+  "version": "1.0.0-beta.0",
+  "private": false,
+  "description": "",
+  "module": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "packageManager": "pnpm@8.15.3",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/react": "^19.0.12",
+    "@types/react-dom": "^19.0.4",
+    "antd": "^5.24.5",
+    "react": "^19.1.0",
+    "react-admin-kit": "^0.5.10",
+    "react-dom": "^19.1.0",
+    "typescript": "^5.8.2"
+  },
+  "peerDependencies": {
+    "antd": "^5.24.5",
+    "react-admin-kit": "^0.5.10"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^6.0.0"
+  }
+}
