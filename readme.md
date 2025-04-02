@@ -13,5 +13,5 @@ pnpm i react-gov-ui --save
 ## 本地开发
 
 1. clone 仓库.
-2. pnpm i
-3. pnpm dev
+2. `pnpm i`
+3. `pnpm dev`
