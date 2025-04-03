@@ -1,1 +1,2 @@
-export { default as StaffSelect } from "./staff-select";
+export { default as Foo } from './Foo';
+export { default as StaffSelect } from './StaffSelect';

@@ -1,8 +1,0 @@
-{
-  "extends": "./src/.umi/tsconfig.json",
-  "compilerOptions": {
-    "paths": {
-      "react-gov-ui": ["../src"]
-    }
-  }
-}
