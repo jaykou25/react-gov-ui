@@ -1,4 +1,4 @@
-import { getOrgTreeList } from '@/apis';
+import { addRecentUsers, getOrgTreeList, getRecentUsers } from '@/apis';
 import request from '@/utils/request';
 import { SchemaForm } from 'react-admin-kit';
 import type { StaffSelectProps } from 'react-gov-ui';
@@ -7,27 +7,44 @@ import { StaffSelect as StaffSelectBase } from 'react-gov-ui';
 // 先在本地封装一下
 const StaffSelect = (props: StaffSelectProps) => {
   const {
-    labelMapper = (item) => `${item.nickname} (${item.userInfo.orgName})`,
-    valueMapper = (item) => item.id,
     // getOrgTreeApi = () => getOrgUser({}),
-    getOrgUserApi,
+    getOrgUsersApi: getOrgUserApi,
+    getRecentUsersApi,
+    userDescRender = (item) => (
+      <div style={{ display: 'flex' }}>
+        <span style={{ marginRight: '30px', width: '110px', flex: 'none' }}>
+          {item.userInfo.empNo}
+        </span>
+        <span
+          title={item.userInfo.orgName}
+          style={{
+            overflow: 'hidden',
+            whiteSpace: 'nowrap',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {item.userInfo.orgName}
+        </span>
+      </div>
+    ),
     ...rest
   } = props;
   return (
     <StaffSelectBase
-      labelMapper={labelMapper}
-      valueMapper={valueMapper}
-      getOrgUserApi={({ current, searchValue, orgId, companyId }) =>
+      userDescRender={userDescRender}
+      getOrgUsersApi={({ current, searchValue, companyId, ...rest }) =>
         request('/api/sysUser/selectUsers', {
           params: {
             current,
             keyword: searchValue,
             companyId: companyId || window['_companyId'],
-            orgId,
+            ...rest,
           },
         })
       }
+      getRecentUsersApi={getRecentUsers}
       getOrgTreeApi={getOrgTreeList}
+      addRecentUsersApi={addRecentUsers}
       {...rest}
     />
   );

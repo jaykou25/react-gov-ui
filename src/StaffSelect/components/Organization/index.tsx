@@ -1,34 +1,28 @@
-import {
-  BorderOutlined,
-  CheckSquareFilled,
-  DownOutlined,
-} from '@ant-design/icons';
-import { Empty, Spin, theme, Tree } from 'antd';
+import { DownOutlined } from '@ant-design/icons';
+import { Empty, Spin, Tree } from 'antd';
 import { useEffect, useState } from 'react';
 
+import UserItem from '../UserItem';
 import './index.less';
-
-const { useToken } = theme;
 
 const Organization = (props: any) => {
   const {
     selectVal,
     setSelectVal,
     multiple,
-    labelRender,
-    valueRender,
-    shortLabelRender,
     selectValRef,
     getOrgUserApi,
     getOrgTreeApi,
+    selectOptionValueRender,
+    selectOptionLabelRender,
+    userTitleRender,
+    userDescRender,
   } = props;
 
   const [userData, setUserData] = useState<any>([]);
   const [treeData, setTreeData] = useState<any>([]);
   const [loading, setLoading] = useState(false);
   const [rightLoading, setRightLoading] = useState(false);
-
-  const { token } = useToken();
 
   const getTreeData = (id = '') => {
     setLoading(true);
@@ -75,9 +69,9 @@ const Organization = (props: any) => {
     setUserData(result.data || []);
   };
 
-  const onCheckBoxchange = (item) => {
-    const label = labelRender(item);
-    const value = valueRender(item);
+  const onCheckBoxChange = (item) => {
+    const label = selectOptionLabelRender(item);
+    const value = selectOptionValueRender(item);
 
     if (multiple) {
       setSelectVal(
@@ -113,35 +107,17 @@ const Organization = (props: any) => {
             {userData.length > 0 ? (
               <div>
                 {userData.map((item: any) => {
-                  const _val = valueRender(item);
-                  const _label = labelRender(item);
+                  const itemValue = selectOptionValueRender(item);
+                  const selectedValues = selectVal.map((i) => i.value);
                   return (
-                    <div
-                      className="rightItem"
-                      key={_val}
-                      onClick={() => {
-                        onCheckBoxchange(item);
-                      }}
-                    >
-                      {selectVal.map((i) => i.value).includes(_val) ? (
-                        <CheckSquareFilled
-                          style={{
-                            color: token.colorPrimary,
-                            fontSize: '16px',
-                          }}
-                        />
-                      ) : (
-                        <BorderOutlined
-                          style={{
-                            color: '#999',
-                            fontSize: '16px',
-                          }}
-                        />
-                      )}
-                      <span style={{ marginLeft: '7px' }}>
-                        {shortLabelRender(_label)}
-                      </span>
-                    </div>
+                    <UserItem
+                      style={{ marginBottom: '10px' }}
+                      key={itemValue}
+                      checked={selectedValues.includes(itemValue)}
+                      userTitleRender={() => userTitleRender(item)}
+                      userDescRender={() => userDescRender(item)}
+                      onClick={() => onCheckBoxChange(item)}
+                    />
                   );
                 })}
               </div>

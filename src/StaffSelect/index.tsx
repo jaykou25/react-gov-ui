@@ -1,8 +1,9 @@
 import { UsergroupAddOutlined } from '@ant-design/icons';
-import { Button, Modal, Space, Tabs, Tag } from 'antd';
+import { Button, message, Modal, Space, Tabs, Tag } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { BusinessSelectBuilder } from 'react-admin-kit';
 import Organization from './components/Organization';
+import Recent from './components/Recent';
 import SearchMember from './components/SearchMember';
 
 import type { ReactNode } from 'react';
@@ -15,19 +16,28 @@ import './index.less';
 
 export type StaffSelectProps = Omit<BusinessSelectProps<'staff'>, 'type'> & {
   readonly?: boolean;
-  getOrgUserApi: ApiType['api'];
+  getOrgUsersApi: ApiType['api'];
   getOrgTreeApi: (params: any) => Promise<any[]>;
-  labelMapper?: (item: any) => string;
-  valueMapper?: (item: any) => string;
+  getRecentUsersApi: (params: any) => Promise<any[]>;
+  addRecentUsersApi: (data: any) => Promise<any>;
+  userTitleRender?: (item: any) => string | ReactNode;
+  userDescRender?: (item: any) => string | ReactNode;
+  selectInputLabelRender?: (obj: any) => string | ReactNode;
+  selectOptionLabelRender?: (item: any) => string;
+  selectOptionValueRender?: (item: any) => string | number;
 };
 
 const StaffSelect = (props: StaffSelectProps) => {
   const {
-    getOrgUserApi,
+    getOrgUsersApi,
     getOrgTreeApi,
+    getRecentUsersApi,
+    addRecentUsersApi,
     readonly,
-    labelMapper,
-    valueMapper,
+    selectOptionLabelRender = (item) => item.nickname,
+    selectOptionValueRender = (item) => item.id,
+    userTitleRender = (item) => item.nickname,
+    userDescRender = (item) => item.id,
     placeholder = '请输入关键字搜索',
     ...rest
   } = props;
@@ -48,8 +58,14 @@ const StaffSelect = (props: StaffSelectProps) => {
   // 弹窗确认函数
   const handleOk = () => {
     if (props.mode === 'multiple') {
+      addRecentUsersApi(selectVal.map((i) => i.value)).then(() => {
+        message.success('add');
+      });
       if (props.onChange) props.onChange(selectVal, {});
     } else {
+      addRecentUsersApi(selectVal.map((i) => i.value)).then(() => {
+        message.success('add');
+      });
       if (props.onChange) props.onChange(selectVal[0], {});
     }
     setModalOpen(false);
@@ -75,41 +91,6 @@ const StaffSelect = (props: StaffSelectProps) => {
     }
   }, [modalOpen]);
 
-  const tabItems = [
-    {
-      key: '1',
-      label: '组织架构',
-      children: (
-        <Organization
-          selectVal={selectVal}
-          setSelectVal={setSelectVal}
-          multiple={props.mode === 'multiple'}
-          labelRender={labelMapper}
-          valueRender={valueMapper}
-          shortLabelRender={shortLabelRender}
-          selectValRef={selectValRef}
-          getOrgUserApi={getOrgUserApi}
-          getOrgTreeApi={getOrgTreeApi}
-        ></Organization>
-      ),
-    },
-    {
-      key: '2',
-      label: '高级搜索',
-      children: (
-        <SearchMember
-          selectVal={selectVal}
-          setSelectVal={setSelectVal}
-          multiple={props.mode === 'multiple'}
-          labelRender={labelMapper}
-          valueRender={valueMapper}
-          selectValRef={selectValRef}
-          getOrgUserApi={getOrgUserApi}
-        ></SearchMember>
-      ),
-    },
-  ];
-
   // 只读模式
   if (readonly) {
     if (props.mode === 'multiple') {
@@ -129,14 +110,14 @@ const StaffSelect = (props: StaffSelectProps) => {
             {
               type: 'staff',
               pagination: true,
-              api: getOrgUserApi,
+              api: getOrgUsersApi,
             },
           ],
         })({
           type: 'staff',
           placeholder,
           ...rest,
-          renderLabel: labelMapper,
+          renderLabel: selectOptionLabelRender,
           // 自定义当前选中的 label 内容, 这是 antd 属性
           labelRender: (obj) => shortLabelRender(obj.label),
           labelInValue: true,
@@ -162,11 +143,62 @@ const StaffSelect = (props: StaffSelectProps) => {
             setTabKey(val);
           }}
           type="card"
-          items={tabItems}
+          items={[
+            {
+              key: 'recent',
+              label: '最近',
+              children: (
+                <Recent
+                  getRecentUsersApi={getRecentUsersApi}
+                  selectVal={selectVal}
+                  selectValRef={selectValRef}
+                  selectOptionValueRender={selectOptionValueRender}
+                  selectOptionLabelRender={selectOptionLabelRender}
+                  userTitleRender={userTitleRender}
+                  userDescRender={userDescRender}
+                />
+              ),
+            },
+            {
+              key: '1',
+              label: '组织架构',
+              children: (
+                <Organization
+                  selectVal={selectVal}
+                  setSelectVal={setSelectVal}
+                  multiple={props.mode === 'multiple'}
+                  selectValRef={selectValRef}
+                  getOrgUserApi={getOrgUsersApi}
+                  getOrgTreeApi={getOrgTreeApi}
+                  selectOptionValueRender={selectOptionValueRender}
+                  selectOptionLabelRender={selectOptionLabelRender}
+                  userTitleRender={userTitleRender}
+                  userDescRender={userDescRender}
+                ></Organization>
+              ),
+            },
+            {
+              key: '2',
+              label: '高级搜索',
+              children: (
+                <SearchMember
+                  selectVal={selectVal}
+                  setSelectVal={setSelectVal}
+                  multiple={props.mode === 'multiple'}
+                  selectValRef={selectValRef}
+                  getOrgUserApi={getOrgUsersApi}
+                  selectOptionValueRender={selectOptionValueRender}
+                  selectOptionLabelRender={selectOptionLabelRender}
+                  userTitleRender={userTitleRender}
+                  userDescRender={userDescRender}
+                ></SearchMember>
+              ),
+            },
+          ]}
         />
 
         {/* 选中的tags */}
-        <div className="orgTags">
+        <div className="rgui-tags-main">
           {selectVal.map((item) => {
             return (
               <Tag

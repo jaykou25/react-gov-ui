@@ -1,9 +1,8 @@
-import { BorderOutlined, CheckSquareFilled } from '@ant-design/icons';
-import { Empty, Input, theme } from 'antd';
+import { Empty, Input } from 'antd';
 import { useEffect, useState } from 'react';
+import UserItem from '../UserItem';
 import './index.less';
 const { Search } = Input;
-const { useToken } = theme;
 
 const SearchMember = (props) => {
   const {
@@ -11,13 +10,14 @@ const SearchMember = (props) => {
     setSelectVal,
     multiple,
     selectValRef,
-    valueRender,
-    labelRender,
     getOrgUserApi,
+    selectOptionValueRender,
+    selectOptionLabelRender,
+    userTitleRender,
+    userDescRender,
   } = props;
   const [val, setVal] = useState('');
   const [userData, setUserData] = useState<any>([]);
-  const { token } = useToken();
 
   useEffect(() => {
     if (val) {
@@ -32,9 +32,9 @@ const SearchMember = (props) => {
     }
   }, [val]);
 
-  const onCheckBoxchange = (item) => {
-    const value = valueRender(item);
-    const label = labelRender(item);
+  const onCheckBoxChange = (item) => {
+    const value = selectOptionValueRender(item);
+    const label = selectOptionLabelRender(item);
 
     if (multiple) {
       setSelectVal(
@@ -59,36 +59,23 @@ const SearchMember = (props) => {
       />
 
       {userData.length > 0 ? (
-        <div className="rightContent">
-          {userData.map((item) => {
-            const value = valueRender(item);
-            return (
-              <div
-                className="rightItem"
-                key={value}
-                onClick={() => {
-                  onCheckBoxchange(item);
-                }}
-              >
-                {selectVal.map((i) => i.value).includes(value) ? (
-                  <CheckSquareFilled
-                    style={{
-                      color: token.colorPrimary,
-                      fontSize: '16px',
-                    }}
+        <div className="rgui-search-content-main">
+          <div className="rgui-search-content-grid">
+            {userData.map((item: any) => {
+              const itemValue = selectOptionValueRender(item);
+              const selectedValues = selectVal.map((i) => i.value);
+              return (
+                <div key={itemValue} className="rgui-search-member-user-item">
+                  <UserItem
+                    checked={selectedValues.includes(itemValue)}
+                    userTitleRender={() => userTitleRender(item)}
+                    userDescRender={() => userDescRender(item)}
+                    onClick={() => onCheckBoxChange(item)}
                   />
-                ) : (
-                  <BorderOutlined
-                    style={{
-                      color: '#999',
-                      fontSize: '16px',
-                    }}
-                  />
-                )}
-                <span style={{ marginLeft: '7px' }}>{labelRender(item)}</span>
-              </div>
-            );
-          })}
+                </div>
+              );
+            })}
+          </div>
         </div>
       ) : (
         <div className="rightContent" style={{ justifyContent: 'center' }}>
