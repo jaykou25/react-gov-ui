@@ -11,4 +11,7 @@ export default defineConfig({
   alias: {
     '@': path.resolve(__dirname, '.dumi'),
   },
+  conventionRoutes: {
+    exclude: [/\/components\//, /\/models\//],
+  },
 });

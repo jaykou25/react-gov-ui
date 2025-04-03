@@ -5,13 +5,15 @@ import { BusinessSelectBuilder } from 'react-admin-kit';
 import Organization from './components/Organization';
 import SearchMember from './components/SearchMember';
 
-import type { SelectProps } from 'antd';
 import type { ReactNode } from 'react';
-import type { ApiType } from 'react-admin-kit/dist/BusinessSelectBuilder/types';
+import type {
+  ApiType,
+  BusinessSelectProps,
+} from 'react-admin-kit/dist/BusinessSelectBuilder/types';
 
 import './index.less';
 
-type IProps = SelectProps & {
+export type StaffSelectProps = Omit<BusinessSelectProps<'staff'>, 'type'> & {
   readonly?: boolean;
   getOrgUserApi: ApiType['api'];
   getOrgTreeApi: (params: any) => Promise<any[]>;
@@ -19,7 +21,7 @@ type IProps = SelectProps & {
   valueMapper?: (item: any) => string;
 };
 
-const StaffSelect = (props: IProps) => {
+const StaffSelect = (props: StaffSelectProps) => {
   const {
     getOrgUserApi,
     getOrgTreeApi,
@@ -27,7 +29,6 @@ const StaffSelect = (props: IProps) => {
     labelMapper,
     valueMapper,
     placeholder = '请输入关键字搜索',
-    labelInValue,
     ...rest
   } = props;
 
@@ -121,12 +122,13 @@ const StaffSelect = (props: IProps) => {
   }
 
   return (
-    <div className="_staff-select">
+    <div className="rgui-staff-select">
       <Space.Compact style={{ width: '100%' }}>
         {BusinessSelectBuilder<'staff'>({
           apis: [
             {
               type: 'staff',
+              pagination: true,
               api: getOrgUserApi,
             },
           ],

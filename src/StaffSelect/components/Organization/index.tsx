@@ -93,7 +93,7 @@ const Organization = (props: any) => {
 
   return (
     <>
-      <div className="organization">
+      <div className="rgui-organization">
         <div className="left">
           <Spin spinning={loading}>
             <Tree

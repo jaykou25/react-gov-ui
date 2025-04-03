@@ -1,7 +1,7 @@
 import { BorderOutlined, CheckSquareFilled } from '@ant-design/icons';
 import { Empty, Input, theme } from 'antd';
 import { useEffect, useState } from 'react';
-import styles from './index.less';
+import './index.less';
 const { Search } = Input;
 const { useToken } = theme;
 
@@ -49,7 +49,7 @@ const SearchMember = (props) => {
   };
 
   return (
-    <div className={styles.SearchMember}>
+    <div className="rgui-search-member">
       <Search
         value={val}
         onChange={(e) => setVal(e.currentTarget.value)}
@@ -59,12 +59,12 @@ const SearchMember = (props) => {
       />
 
       {userData.length > 0 ? (
-        <div className={styles.rightContent}>
+        <div className="rightContent">
           {userData.map((item) => {
             const value = valueRender(item);
             return (
               <div
-                className={styles.rightItem}
+                className="rightItem"
                 key={value}
                 onClick={() => {
                   onCheckBoxchange(item);
@@ -91,10 +91,7 @@ const SearchMember = (props) => {
           })}
         </div>
       ) : (
-        <div
-          className={styles.rightContent}
-          style={{ justifyContent: 'center' }}
-        >
+        <div className="rightContent" style={{ justifyContent: 'center' }}>
           <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
         </div>
       )}

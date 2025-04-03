@@ -17,11 +17,11 @@ export async function queryCurrent(): Promise<any> {
 }
 
 // 组织架构
-export function getOrgTreeList() {
+export function getOrgTreeList(): Promise<any> {
   return request('/api/glOrg/getOrgTreeList');
 }
 
 // 人员查询
-export function getOrgUser(params) {
+export function getOrgUser(params): Promise<any> {
   return request('/api/sysUser/selectUsers', { params });
 }
