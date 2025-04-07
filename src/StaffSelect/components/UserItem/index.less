@@ -3,6 +3,10 @@
   align-items: start;
 }
 
+.rgui-user-item:hover .rgui-user-item-user-extra {
+  visibility: visible;
+}
+
 .rgui-user-item-checkbox {
   display: flex;
   align-items: center;
@@ -12,8 +16,17 @@
 .rgui-user-item-user-main {
   margin-left: 10px;
   overflow: hidden;
+  flex: auto;
 }
 
 .rgui-user-item-user-desc {
   color: #acacac;
+}
+
+.rgui-user-item-user-extra {
+  cursor: pointer;
+  flex: none;
+  color: #acacac;
+  align-self: center;
+  visibility: hidden;
 }

@@ -12,6 +12,7 @@ type UserItemProps = {
   userDescRender: () => string | ReactNode;
   style?: any;
   className?: string;
+  extra?: ReactNode;
 };
 
 const UserItem = (props: UserItemProps) => {
@@ -45,6 +46,9 @@ const UserItem = (props: UserItemProps) => {
         <div>{props.userTitleRender()}</div>
         <div className="rgui-user-item-user-desc">{props.userDescRender()}</div>
       </div>
+      {!!props.extra && (
+        <div className="rgui-user-item-user-extra">{props.extra}</div>
+      )}
     </div>
   );
 };

@@ -12,6 +12,7 @@ import type {
   BusinessSelectProps,
 } from 'react-admin-kit/dist/BusinessSelectBuilder/types';
 
+import UserItem from './components/UserItem';
 import './index.less';
 
 export type StaffSelectProps = Omit<BusinessSelectProps<'staff'>, 'type'> & {
@@ -102,6 +103,36 @@ const StaffSelect = (props: StaffSelectProps) => {
     }
   }
 
+  const UserItemWithClick = (item: any) => {
+    const itemValue = selectOptionValueRender(item);
+    const selectedValues = selectVal.map((i) => i.value);
+
+    const onCheckBoxChange = () => {
+      const value = selectOptionValueRender(item);
+      const label = selectOptionLabelRender(item);
+
+      if (props.mode === 'multiple') {
+        setSelectVal(
+          selectVal.map((item) => item.value).includes(value)
+            ? selectVal.filter((item) => item.value !== value)
+            : [...selectVal, { label, value }],
+        );
+      } else {
+        setSelectVal([{ label, value }]);
+        selectValRef.current = item;
+      }
+    };
+
+    return (
+      <UserItem
+        checked={selectedValues.includes(itemValue)}
+        userTitleRender={() => userTitleRender(item)}
+        userDescRender={() => userDescRender(item)}
+        onClick={onCheckBoxChange}
+      />
+    );
+  };
+
   return (
     <div className="rgui-staff-select">
       <Space.Compact style={{ width: '100%' }}>
@@ -156,6 +187,7 @@ const StaffSelect = (props: StaffSelectProps) => {
                   selectOptionLabelRender={selectOptionLabelRender}
                   userTitleRender={userTitleRender}
                   userDescRender={userDescRender}
+                  userItemFunc={UserItemWithClick}
                 />
               ),
             },
