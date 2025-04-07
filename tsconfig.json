@@ -11,7 +11,8 @@
       "@/*": [".dumi/*"],
       "react-gov-ui": ["src"],
       "react-gov-ui/*": ["src/*", "*"]
-    }
+    },
+    "noImplicitAny": false
   },
   "include": [".dumirc.ts", "src/**/*"]
 }

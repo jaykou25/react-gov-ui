@@ -72,7 +72,12 @@ const UserItem = (props: UserItemProps) => {
         </div>
       </div>
       {!!props.extra && (
-        <div className="rgui-user-item-user-extra">{props.extra}</div>
+        <div
+          className="rgui-user-item-user-extra"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {props.extra}
+        </div>
       )}
     </div>
   );
