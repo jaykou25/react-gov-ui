@@ -70,7 +70,7 @@ const Recent = (props: any) => {
                 title="确定删除该最近用户吗?"
                 onConfirm={() => doDelRecentUser(item.recentUserInfoId)}
               >
-                <CloseOutlined />
+                <CloseOutlined style={{ marginRight: '5px' }} />
               </Popconfirm>
             ),
           }),

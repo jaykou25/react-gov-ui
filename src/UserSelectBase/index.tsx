@@ -1,6 +1,6 @@
 import { UsergroupAddOutlined } from '@ant-design/icons';
-import { Button, Modal, Space, Tabs, Tag } from 'antd';
-import { useEffect, useState } from 'react';
+import { Button, Modal, Space, Tabs, Tag, Tooltip } from 'antd';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { BusinessSelectBuilder } from 'react-admin-kit';
 import Organization from './components/Organization';
 import Recent from './components/Recent';
@@ -18,6 +18,7 @@ import './index.less';
 export type UserSelectBaseProps = Omit<BusinessSelectProps<'user'>, 'type'> & {
   readonly?: boolean;
   getOrgUsersApi: ApiType['api'];
+  getOrgUserApi: (id: any) => Promise<any>;
   getOrgTreeApi: (params: any) => Promise<any[]>;
   getRecentUsersApi: (params: any) => Promise<any[]>;
   addRecentUsersApi: (data: any) => Promise<any>;
@@ -25,6 +26,8 @@ export type UserSelectBaseProps = Omit<BusinessSelectProps<'user'>, 'type'> & {
   clearRecentUsersApi: () => Promise<any>;
   userTitleRender?: (item: any) => string | ReactNode;
   userDescRender?: (item: any) => string | ReactNode;
+  userDescLeftRender?: (item: any) => string;
+  userDescRightRender?: (item: any) => string;
   selectInputLabelRender?: (obj: any) => string | ReactNode;
   selectOptionLabelRender?: (item: any) => string;
   selectOptionValueRender?: (item: any) => string | number;
@@ -37,6 +40,7 @@ export type UserSelectProps = Omit<BusinessSelectProps<'user'>, 'type'> & {
 const UserSelectBase = (props: UserSelectBaseProps) => {
   const {
     getOrgUsersApi,
+    getOrgUserApi,
     getOrgTreeApi,
     getRecentUsersApi,
     addRecentUsersApi,
@@ -47,7 +51,9 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
     selectOptionValueRender = (item) => item.id,
     selectInputLabelRender = (label?: string | number | ReactNode) => label,
     userTitleRender = (item) => item.nickname,
-    userDescRender = (item) => item.id,
+    userDescRender,
+    userDescLeftRender = (item) => item.id,
+    userDescRightRender = (item) => item.nickname,
     placeholder = '请输入关键字搜索',
     ...rest
   } = props;
@@ -58,6 +64,7 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
     {
       value: string | number;
       label: string | number;
+      extra: string; // 用于 tooltip 显示
     }[]
   >([]);
 
@@ -80,14 +87,95 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
     setModalOpen(false);
   };
 
-  // 初始化 selectedValue
-  useEffect(() => {
-    let defaultSelectedVal = props.value || [];
-    defaultSelectedVal = Array.isArray(defaultSelectedVal)
-      ? defaultSelectedVal
-      : [defaultSelectedVal];
+  const getUserTooltip = (item: any) =>
+    `${userDescLeftRender(item)} ${userDescRightRender(item)}`;
 
-    setSelectedVal(defaultSelectedVal);
+  // 初始值可能是 undefined 或者是一个对象 {label, value}, 需要统一将他们处理成数组
+  const normalizeInitialValue = () => {
+    // 格式化成数组
+    let defaultVal = props.value || [];
+    defaultVal = Array.isArray(defaultVal) ? defaultVal : [defaultVal];
+
+    // 创建一个新的可扩展对象数组
+    const finalVal = defaultVal.map((item: any) => ({ ...item }));
+
+    const requestArr: Promise<any>[] = [];
+    finalVal.forEach((item: any) => {
+      // 获取用户的额外信息
+      if (!item.extra) {
+        requestArr.push(
+          new Promise((resolve) => {
+            getOrgUserApi(item.value).then((res) => {
+              item.extra = getUserTooltip(res);
+              resolve(true);
+            });
+          }),
+        );
+      }
+    });
+
+    Promise.all(requestArr).then(() => {
+      setSelectedVal(finalVal);
+    });
+  };
+
+  // todo: BusinessSelect 的频繁变动会引起网络请求， 因为 BusinessSelect onChange 抛出来的值里并不含有 extra
+  // 一种方法是改写 BusinessSelect 中的 onChange 方法， 把 extra 放到 onChange 的 value 里去。
+  // 但是对于多选模式(mode: multiple), onChange 的第二个参数是空数组，这个需要 rak 修改。
+  useEffect(() => {
+    normalizeInitialValue();
+  }, [props.value]);
+
+  // 缓存这个组件
+  const UserItemWithClick = useCallback(
+    ({ item, ...rest }: any) => {
+      const itemValue = selectOptionValueRender(item);
+      const selectedValues = selectedVal.map((i) => i.value);
+
+      const onCheckBoxChange = () => {
+        const value = selectOptionValueRender(item);
+        const label = selectOptionLabelRender(item);
+        const extra = getUserTooltip(item);
+
+        let finalValue;
+        if (props.mode === 'multiple') {
+          finalValue = selectedVal.map((item) => item.value).includes(value)
+            ? selectedVal.filter((item) => item.value !== value)
+            : [...selectedVal, { label, value, extra }];
+        } else {
+          finalValue = [{ label, value, extra }];
+        }
+
+        setSelectedVal(finalValue);
+      };
+
+      return (
+        <UserItem
+          key={itemValue}
+          item={item}
+          checked={selectedValues.includes(itemValue)}
+          userTitleRender={userTitleRender}
+          userDescRender={userDescRender}
+          userDescLeftRender={userDescLeftRender}
+          userDescRightRender={userDescRightRender}
+          onClick={onCheckBoxChange}
+          {...rest}
+        />
+      );
+    },
+    [selectedVal],
+  );
+
+  const BusinessSelect = useMemo(() => {
+    return BusinessSelectBuilder<'user'>({
+      apis: [
+        {
+          type: 'user',
+          pagination: true,
+          api: getOrgUsersApi,
+        },
+      ],
+    });
   }, []);
 
   // 只读模式
@@ -101,58 +189,19 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
     }
   }
 
-  const UserItemWithClick = ({ item, ...rest }: any) => {
-    const itemValue = selectOptionValueRender(item);
-    const selectedValues = selectedVal.map((i) => i.value);
-
-    const onCheckBoxChange = () => {
-      const value = selectOptionValueRender(item);
-      const label = selectOptionLabelRender(item);
-
-      if (props.mode === 'multiple') {
-        setSelectedVal(
-          selectedVal.map((item) => item.value).includes(value)
-            ? selectedVal.filter((item) => item.value !== value)
-            : [...selectedVal, { label, value }],
-        );
-      } else {
-        setSelectedVal([{ label, value }]);
-      }
-    };
-
-    return (
-      <UserItem
-        key={itemValue}
-        checked={selectedValues.includes(itemValue)}
-        userTitleRender={() => userTitleRender(item)}
-        userDescRender={() => userDescRender(item)}
-        onClick={onCheckBoxChange}
-        {...rest}
-      />
-    );
-  };
-
   return (
     <div className="rgui-user-select">
       <Space.Compact style={{ width: '100%' }}>
-        {BusinessSelectBuilder<'staff'>({
-          apis: [
-            {
-              type: 'staff',
-              pagination: true,
-              api: getOrgUsersApi,
-            },
-          ],
-        })({
-          type: 'staff',
-          placeholder,
-          ...rest,
-          renderLabel: selectOptionLabelRender,
-          // 自定义当前选中的 label 内容, 这是 antd 属性
-          labelRender: (obj) => selectInputLabelRender(obj.label),
-          labelInValue: true,
-          suffixIcon: null,
-        })}
+        <BusinessSelect
+          type="user"
+          placeholder={placeholder}
+          {...rest}
+          // 覆写下面的属性
+          suffixIcon={null}
+          labelInValue
+          labelRender={(obj) => selectInputLabelRender(obj.label)} // 这两个属性很容易混淆。labelRender 是 antd 的属性，用于更改 select input 中的文本。
+          renderLabel={selectOptionLabelRender} // renderLabel 是 rak 的属性，用于更改 select option(选项) 上的文本。
+        />
         <Button
           icon={<UsergroupAddOutlined />}
           onClick={() => setModalOpen(true)}
@@ -214,19 +263,20 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
         <div className="rgui-tags-main">
           {selectedVal.map((item) => {
             return (
-              <Tag
-                color="blue"
-                key={item.value}
-                closable
-                onClose={(e) => {
-                  e.preventDefault();
-                  setSelectedVal(
-                    selectedVal.filter((i) => i.value !== item.value),
-                  );
-                }}
-              >
-                {selectInputLabelRender(item.label)}
-              </Tag>
+              <Tooltip key={item.value} title={item.extra}>
+                <Tag
+                  color="blue"
+                  closable
+                  onClose={(e) => {
+                    e.preventDefault();
+                    setSelectedVal(
+                      selectedVal.filter((i) => i.value !== item.value),
+                    );
+                  }}
+                >
+                  {selectInputLabelRender(item.label)}
+                </Tag>
+              </Tooltip>
             );
           })}
         </div>

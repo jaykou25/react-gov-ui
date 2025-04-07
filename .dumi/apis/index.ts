@@ -22,8 +22,13 @@ export function getOrgTreeList(): Promise<any> {
 }
 
 // 人员查询
-export function getOrgUser(params): Promise<any> {
+export function getOrgUsers(params): Promise<any> {
   return request('/api/sysUser/selectUsers', { params });
+}
+
+// 人员详情
+export function getOrgUser(id: any): Promise<any> {
+  return request(`/api/sysUser/info/${id}`);
 }
 
 // 最近常用用户信息表列表
