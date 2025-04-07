@@ -1,6 +1,6 @@
-export { default as StaffSelect } from './StaffSelect';
+export { default as UserSelectBase } from './UserSelectBase';
 
 /**
  * 类型定义
  */
-export type { StaffSelectProps } from './StaffSelect';
+export type { UserSelectBaseProps, UserSelectProps } from './UserSelectBase';

@@ -1,6 +1,6 @@
 import { UsergroupAddOutlined } from '@ant-design/icons';
-import { Button, message, Modal, Space, Tabs, Tag } from 'antd';
-import { useEffect, useRef, useState } from 'react';
+import { Button, Modal, Space, Tabs, Tag } from 'antd';
+import { useEffect, useState } from 'react';
 import { BusinessSelectBuilder } from 'react-admin-kit';
 import Organization from './components/Organization';
 import Recent from './components/Recent';
@@ -15,12 +15,14 @@ import type {
 import UserItem from './components/UserItem';
 import './index.less';
 
-export type StaffSelectProps = Omit<BusinessSelectProps<'staff'>, 'type'> & {
+export type UserSelectBaseProps = Omit<BusinessSelectProps<'user'>, 'type'> & {
   readonly?: boolean;
   getOrgUsersApi: ApiType['api'];
   getOrgTreeApi: (params: any) => Promise<any[]>;
   getRecentUsersApi: (params: any) => Promise<any[]>;
   addRecentUsersApi: (data: any) => Promise<any>;
+  deleteRecentUserApi: (id: any) => Promise<any>;
+  clearRecentUsersApi: () => Promise<any>;
   userTitleRender?: (item: any) => string | ReactNode;
   userDescRender?: (item: any) => string | ReactNode;
   selectInputLabelRender?: (obj: any) => string | ReactNode;
@@ -28,15 +30,22 @@ export type StaffSelectProps = Omit<BusinessSelectProps<'staff'>, 'type'> & {
   selectOptionValueRender?: (item: any) => string | number;
 };
 
-const StaffSelect = (props: StaffSelectProps) => {
+export type UserSelectProps = Omit<BusinessSelectProps<'user'>, 'type'> & {
+  readonly?: boolean;
+};
+
+const UserSelectBase = (props: UserSelectBaseProps) => {
   const {
     getOrgUsersApi,
     getOrgTreeApi,
     getRecentUsersApi,
     addRecentUsersApi,
+    deleteRecentUserApi,
+    clearRecentUsersApi,
     readonly,
     selectOptionLabelRender = (item) => item.nickname,
     selectOptionValueRender = (item) => item.id,
+    selectInputLabelRender = (label?: string | number | ReactNode) => label,
     userTitleRender = (item) => item.nickname,
     userDescRender = (item) => item.id,
     placeholder = '请输入关键字搜索',
@@ -45,96 +54,86 @@ const StaffSelect = (props: StaffSelectProps) => {
 
   const [modalOpen, setModalOpen] = useState(false);
   // 选中的数据
-  const [selectVal, setSelectVal] = useState<
+  const [selectedVal, setSelectedVal] = useState<
     {
       value: string | number;
       label: string | number;
     }[]
   >([]);
-  // 只记录单选项
-  const selectValRef = useRef<any>({});
+
   // 控制 tab 切换
-  const [tabKey, setTabKey] = useState<string>('1');
+  const [tabKey, setTabKey] = useState<string>('recent');
 
   // 弹窗确认函数
   const handleOk = () => {
     if (props.mode === 'multiple') {
-      addRecentUsersApi(selectVal.map((i) => i.value)).then(() => {
-        message.success('add');
-      });
-      if (props.onChange) props.onChange(selectVal, {});
+      if (props.onChange) props.onChange(selectedVal, {});
     } else {
-      addRecentUsersApi(selectVal.map((i) => i.value)).then(() => {
-        message.success('add');
-      });
-      if (props.onChange) props.onChange(selectVal[0], {});
+      if (props.onChange) props.onChange(selectedVal[0], {});
     }
+
+    // 添加到常用人
+    if (selectedVal.length > 0) {
+      addRecentUsersApi(selectedVal.map((i) => i.value));
+    }
+
     setModalOpen(false);
   };
 
-  const shortLabelRender = (label?: string | number | ReactNode): any => {
-    if (typeof label === 'object') return label;
-
-    const _label = (label || '').toString();
-
-    return _label.split(' ')[0];
-  };
-
-  const getDefaultVal = () => {
-    const _val = props.value || [];
-    return Array.isArray(_val) ? _val : [_val];
-  };
-
-  // 弹窗打开后保持正确的选中状态
+  // 初始化 selectedValue
   useEffect(() => {
-    if (modalOpen) {
-      setSelectVal(getDefaultVal());
-    }
-  }, [modalOpen]);
+    let defaultSelectedVal = props.value || [];
+    defaultSelectedVal = Array.isArray(defaultSelectedVal)
+      ? defaultSelectedVal
+      : [defaultSelectedVal];
+
+    setSelectedVal(defaultSelectedVal);
+  }, []);
 
   // 只读模式
   if (readonly) {
     if (props.mode === 'multiple') {
       return (props.value || [])
-        .map((item: any) => shortLabelRender(item.label))
+        .map((item: any) => selectInputLabelRender(item.label))
         .join(', ');
     } else {
-      return shortLabelRender(props.value?.label);
+      return selectInputLabelRender(props.value?.label);
     }
   }
 
-  const UserItemWithClick = (item: any) => {
+  const UserItemWithClick = ({ item, ...rest }: any) => {
     const itemValue = selectOptionValueRender(item);
-    const selectedValues = selectVal.map((i) => i.value);
+    const selectedValues = selectedVal.map((i) => i.value);
 
     const onCheckBoxChange = () => {
       const value = selectOptionValueRender(item);
       const label = selectOptionLabelRender(item);
 
       if (props.mode === 'multiple') {
-        setSelectVal(
-          selectVal.map((item) => item.value).includes(value)
-            ? selectVal.filter((item) => item.value !== value)
-            : [...selectVal, { label, value }],
+        setSelectedVal(
+          selectedVal.map((item) => item.value).includes(value)
+            ? selectedVal.filter((item) => item.value !== value)
+            : [...selectedVal, { label, value }],
         );
       } else {
-        setSelectVal([{ label, value }]);
-        selectValRef.current = item;
+        setSelectedVal([{ label, value }]);
       }
     };
 
     return (
       <UserItem
+        key={itemValue}
         checked={selectedValues.includes(itemValue)}
         userTitleRender={() => userTitleRender(item)}
         userDescRender={() => userDescRender(item)}
         onClick={onCheckBoxChange}
+        {...rest}
       />
     );
   };
 
   return (
-    <div className="rgui-staff-select">
+    <div className="rgui-user-select">
       <Space.Compact style={{ width: '100%' }}>
         {BusinessSelectBuilder<'staff'>({
           apis: [
@@ -150,7 +149,7 @@ const StaffSelect = (props: StaffSelectProps) => {
           ...rest,
           renderLabel: selectOptionLabelRender,
           // 自定义当前选中的 label 内容, 这是 antd 属性
-          labelRender: (obj) => shortLabelRender(obj.label),
+          labelRender: (obj) => selectInputLabelRender(obj.label),
           labelInValue: true,
           suffixIcon: null,
         })}
@@ -181,12 +180,8 @@ const StaffSelect = (props: StaffSelectProps) => {
               children: (
                 <Recent
                   getRecentUsersApi={getRecentUsersApi}
-                  selectVal={selectVal}
-                  selectValRef={selectValRef}
-                  selectOptionValueRender={selectOptionValueRender}
-                  selectOptionLabelRender={selectOptionLabelRender}
-                  userTitleRender={userTitleRender}
-                  userDescRender={userDescRender}
+                  deleteRecentUserApi={deleteRecentUserApi}
+                  clearRecentUsersApi={clearRecentUsersApi}
                   userItemFunc={UserItemWithClick}
                 />
               ),
@@ -196,16 +191,9 @@ const StaffSelect = (props: StaffSelectProps) => {
               label: '组织架构',
               children: (
                 <Organization
-                  selectVal={selectVal}
-                  setSelectVal={setSelectVal}
-                  multiple={props.mode === 'multiple'}
-                  selectValRef={selectValRef}
                   getOrgUserApi={getOrgUsersApi}
                   getOrgTreeApi={getOrgTreeApi}
-                  selectOptionValueRender={selectOptionValueRender}
-                  selectOptionLabelRender={selectOptionLabelRender}
-                  userTitleRender={userTitleRender}
-                  userDescRender={userDescRender}
+                  userItemFunc={UserItemWithClick}
                 ></Organization>
               ),
             },
@@ -214,15 +202,8 @@ const StaffSelect = (props: StaffSelectProps) => {
               label: '高级搜索',
               children: (
                 <SearchMember
-                  selectVal={selectVal}
-                  setSelectVal={setSelectVal}
-                  multiple={props.mode === 'multiple'}
-                  selectValRef={selectValRef}
                   getOrgUserApi={getOrgUsersApi}
-                  selectOptionValueRender={selectOptionValueRender}
-                  selectOptionLabelRender={selectOptionLabelRender}
-                  userTitleRender={userTitleRender}
-                  userDescRender={userDescRender}
+                  userItemFunc={UserItemWithClick}
                 ></SearchMember>
               ),
             },
@@ -231,7 +212,7 @@ const StaffSelect = (props: StaffSelectProps) => {
 
         {/* 选中的tags */}
         <div className="rgui-tags-main">
-          {selectVal.map((item) => {
+          {selectedVal.map((item) => {
             return (
               <Tag
                 color="blue"
@@ -239,10 +220,12 @@ const StaffSelect = (props: StaffSelectProps) => {
                 closable
                 onClose={(e) => {
                   e.preventDefault();
-                  setSelectVal(selectVal.filter((i) => i.value !== item.value));
+                  setSelectedVal(
+                    selectedVal.filter((i) => i.value !== item.value),
+                  );
                 }}
               >
-                {shortLabelRender(item.label)}
+                {selectInputLabelRender(item.label)}
               </Tag>
             );
           })}
@@ -252,4 +235,4 @@ const StaffSelect = (props: StaffSelectProps) => {
   );
 };
 
-export default StaffSelect;
+export default UserSelectBase;
