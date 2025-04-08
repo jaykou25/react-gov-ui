@@ -1,6 +1,6 @@
 import { UsergroupAddOutlined } from '@ant-design/icons';
 import { Button, Modal, Space, Tabs, Tag, Tooltip } from 'antd';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BusinessSelectBuilder } from 'react-admin-kit';
 import Organization from './components/Organization';
 import Recent from './components/Recent';
@@ -31,10 +31,12 @@ export type UserSelectBaseProps = Omit<BusinessSelectProps<'user'>, 'type'> & {
   selectInputLabelRender?: (obj: any) => string | ReactNode;
   selectOptionLabelRender?: (item: any) => string;
   selectOptionValueRender?: (item: any) => string | number;
+  tagColor?: string;
 };
 
 export type UserSelectProps = Omit<BusinessSelectProps<'user'>, 'type'> & {
   readonly?: boolean;
+  tagColor?: string;
 };
 
 const UserSelectBase = (props: UserSelectBaseProps) => {
@@ -55,6 +57,7 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
     userDescLeftRender = (item) => item.id,
     userDescRightRender = (item) => item.nickname,
     placeholder = '请输入关键字搜索',
+    tagColor = 'blue',
     ...rest
   } = props;
 
@@ -71,6 +74,8 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
   // 控制 tab 切换
   const [tabKey, setTabKey] = useState<string>('recent');
 
+  const recentRef = useRef<any>(null);
+
   // 弹窗确认函数
   const handleOk = () => {
     if (props.mode === 'multiple') {
@@ -82,6 +87,7 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
     // 添加到常用人
     if (selectedVal.length > 0) {
       addRecentUsersApi(selectedVal.map((i) => i.value));
+      recentRef.current?.fetchRecentUsers();
     }
 
     setModalOpen(false);
@@ -123,8 +129,9 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
   // 一种方法是改写 BusinessSelect 中的 onChange 方法， 把 extra 放到 onChange 的 value 里去。
   // 但是对于多选模式(mode: multiple), onChange 的第二个参数是空数组，这个需要 rak 修改。
   useEffect(() => {
+    console.log('UserSelectBase useEffect', props.value);
     normalizeInitialValue();
-  }, [props.value]);
+  }, [JSON.stringify(props.value)]);
 
   // 缓存这个组件
   const UserItemWithClick = useCallback(
@@ -228,6 +235,7 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
               label: '最近',
               children: (
                 <Recent
+                  ref={recentRef}
                   getRecentUsersApi={getRecentUsersApi}
                   deleteRecentUserApi={deleteRecentUserApi}
                   clearRecentUsersApi={clearRecentUsersApi}
@@ -265,7 +273,7 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
             return (
               <Tooltip key={item.value} title={item.extra}>
                 <Tag
-                  color="blue"
+                  color={tagColor}
                   closable
                   onClose={(e) => {
                     e.preventDefault();

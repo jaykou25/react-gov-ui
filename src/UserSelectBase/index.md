@@ -12,3 +12,7 @@ nav:
 基础用法 - 多选
 
 <code src="./demos/multi"></code>
+
+更改主题 - 红色
+
+<code src="./demos/theme"></code>

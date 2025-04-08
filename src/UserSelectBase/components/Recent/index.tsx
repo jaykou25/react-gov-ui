@@ -1,11 +1,16 @@
 import { CloseOutlined } from '@ant-design/icons';
 import { message, Popconfirm, theme } from 'antd';
-import { useEffect, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import UsersBox from '../UsersBox';
 
 const { useToken } = theme;
 
-const Recent = (props: any) => {
+// 定义 ref 方法的类型
+interface RecentRef {
+  fetchRecentUsers: () => void;
+}
+
+const Recent = forwardRef<RecentRef, any>((props, ref) => {
   const {
     getRecentUsersApi,
     userItemFunc,
@@ -14,7 +19,6 @@ const Recent = (props: any) => {
   } = props;
 
   const { token } = useToken();
-
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -28,6 +32,11 @@ const Recent = (props: any) => {
         setLoading(false);
       });
   };
+
+  // 使用 useImperativeHandle 暴露方法给父组件
+  useImperativeHandle(ref, () => ({
+    fetchRecentUsers,
+  }));
 
   useEffect(() => {
     fetchRecentUsers();
@@ -78,6 +87,6 @@ const Recent = (props: any) => {
       </UsersBox>
     </div>
   );
-};
+});
 
 export default Recent;
