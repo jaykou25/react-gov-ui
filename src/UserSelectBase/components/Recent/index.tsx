@@ -58,18 +58,25 @@ const Recent = forwardRef<RecentRef, any>((props, ref) => {
 
   return (
     <div>
-      <div
-        style={{
-          textAlign: 'end',
-          cursor: 'pointer',
-          color: token.colorPrimary,
-        }}
+      <UsersBox
+        loading={loading}
+        empty={users.length < 1}
+        style={{ paddingLeft: '10px' }}
       >
-        <Popconfirm title="确定清空最近用户吗?" onConfirm={doClearRecentUsers}>
-          <span>清空所有</span>
-        </Popconfirm>
-      </div>
-      <UsersBox loading={loading} empty={users.length < 1}>
+        <div
+          style={{
+            textAlign: 'end',
+            cursor: 'pointer',
+            color: token.colorPrimary,
+          }}
+        >
+          <Popconfirm
+            title="确定清空最近用户吗?"
+            onConfirm={doClearRecentUsers}
+          >
+            <span>清空所有</span>
+          </Popconfirm>
+        </div>
         {users.map((item: any) =>
           userItemFunc({
             item,

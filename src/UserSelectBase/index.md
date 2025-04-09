@@ -16,3 +16,7 @@ nav:
 更改主题 - 红色
 
 <code src="./demos/theme"></code>
+
+弹窗表单
+
+<code src="./demos/modal-form"></code>

@@ -34,7 +34,11 @@ const SearchMember = (props: any) => {
         allowClear
       />
 
-      <UsersBox empty={userData.length < 1} loading={loading}>
+      <UsersBox
+        empty={userData.length < 1}
+        loading={loading}
+        style={{ marginTop: '15px', paddingLeft: '10px' }}
+      >
         <div className="rgui-search-content-grid">
           {userData.map((item: any) =>
             userItemFunc({ item, className: 'rgui-search-member-user-item' }),

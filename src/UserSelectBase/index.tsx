@@ -96,42 +96,34 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
   const getUserTooltip = (item: any) =>
     `${userDescLeftRender(item)} ${userDescRightRender(item)}`;
 
-  // 初始值可能是 undefined 或者是一个对象 {label, value}, 需要统一将他们处理成数组
-  const normalizeInitialValue = () => {
-    // 格式化成数组
-    let defaultVal = props.value || [];
-    defaultVal = Array.isArray(defaultVal) ? defaultVal : [defaultVal];
-
-    // 创建一个新的可扩展对象数组
-    const finalVal = defaultVal.map((item: any) => ({ ...item }));
-
-    const requestArr: Promise<any>[] = [];
-    finalVal.forEach((item: any) => {
-      // 获取用户的额外信息
-      if (!item.extra) {
-        requestArr.push(
-          new Promise((resolve) => {
-            getOrgUserApi(item.value).then((res) => {
-              item.extra = getUserTooltip(res);
-              resolve(true);
-            });
-          }),
-        );
-      }
-    });
-
-    Promise.all(requestArr).then(() => {
-      setSelectedVal(finalVal);
-    });
-  };
-
   // todo: BusinessSelect 的频繁变动会引起网络请求， 因为 BusinessSelect onChange 抛出来的值里并不含有 extra
   // 一种方法是改写 BusinessSelect 中的 onChange 方法， 把 extra 放到 onChange 的 value 里去。
   // 但是对于多选模式(mode: multiple), onChange 的第二个参数是空数组，这个需要 rak 修改。
   useEffect(() => {
-    console.log('UserSelectBase useEffect', props.value);
+    const normalizeInitialValue = async () => {
+      // 格式化成数组
+      let defaultVal = props.value || [];
+      defaultVal = Array.isArray(defaultVal) ? defaultVal : [defaultVal];
+
+      const updatedVal = await Promise.all(
+        defaultVal.map(async (item: any) => {
+          if (!item.extra) {
+            try {
+              const res = await getOrgUserApi(item.value);
+              return { ...item, extra: getUserTooltip(res) };
+            } catch (error) {
+              console.error('Failed to fetch user info:', error);
+              return item;
+            }
+          }
+          return item;
+        }),
+      );
+      setSelectedVal(updatedVal);
+    };
+
     normalizeInitialValue();
-  }, [JSON.stringify(props.value)]);
+  }, [props.value]);
 
   // 缓存这个组件
   const UserItemWithClick = useCallback(

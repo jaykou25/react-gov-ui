@@ -51,7 +51,7 @@ const UserItem = (props: UserItemProps) => {
           {props.userDescRender ? (
             props.userDescRender(item)
           ) : (
-            <div style={{ display: 'flex' }}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
               <span
                 style={{ marginRight: '30px', width: '110px', flex: 'none' }}
               >
