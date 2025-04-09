@@ -29,13 +29,11 @@ const Organization = (props: any) => {
 
   const onTreeSelect = async (selectedKeys: any, info: any) => {
     setRightLoading(true);
-    const result = await getOrgUsersApi({
-      orgId: info.node.orgid,
-    });
+    const result = await getOrgUsersApi(info.node);
 
     setRightLoading(false);
 
-    setUserData(result.data || []);
+    setUserData(result || []);
   };
 
   return (

@@ -25,11 +25,17 @@ const UserSelect = (props: UserSelectProps) => {
       }
       getUserDetailApi={getOrgUser}
       getOrgTreeApi={getOrgTreeList}
-      getOrgUsersApi={({ orgId }) =>
-        getOrgUsers({ orgId, current: 1, pageSize: 2000 })
-      }
+      getOrgUsersApi={(node) => {
+        return getOrgUsers({
+          orgId: node.orgid,
+          current: 1,
+          pageSize: 2000,
+        }).then((res) => res.data);
+      }}
       searchOrgUsersApi={({ keyword }) =>
-        getOrgUsers({ keyword, current: 1, pageSize: 2000 })
+        getOrgUsers({ keyword, current: 1, pageSize: 2000 }).then(
+          (res) => res.data,
+        )
       }
       getRecentUsersApi={getRecentUsers}
       addRecentUsersApi={addRecentUsers}

@@ -15,7 +15,7 @@ const SearchMember = (props: any) => {
       setLoading(true);
       getOrgUsersApi({ keyword: val })
         .then((res) => {
-          setUserData(res.data || []);
+          setUserData(res || []);
         })
         .finally(() => setLoading(false));
     } else {
