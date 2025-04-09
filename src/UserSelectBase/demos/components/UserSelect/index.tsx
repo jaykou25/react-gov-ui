@@ -7,26 +7,31 @@ import {
   delRecentUser,
   getOrgTreeList,
   getOrgUser,
+  getOrgUsers,
   getRecentUsers,
 } from '@/apis';
-import request from '@/utils/request';
 
 const UserSelect = (props: UserSelectProps) => {
   return (
     <UserSelectBase
       userDescLeftRender={(item) => item.userInfo.empNo}
       userDescRightRender={(item) => item.userInfo.orgName}
-      getOrgUsersApi={({ searchValue, ...rest }) =>
-        request('/api/sysUser/selectUsers', {
-          params: {
-            keyword: searchValue,
-            ...rest,
-          },
+      getUsersApi={({ searchValue }) =>
+        getOrgUsers({
+          keyword: searchValue,
+          current: 1,
+          pageSize: 2000,
         })
       }
-      getOrgUserApi={getOrgUser}
-      getRecentUsersApi={getRecentUsers}
+      getUserDetailApi={getOrgUser}
       getOrgTreeApi={getOrgTreeList}
+      getOrgUsersApi={({ orgId }) =>
+        getOrgUsers({ orgId, current: 1, pageSize: 2000 })
+      }
+      searchOrgUsersApi={({ keyword }) =>
+        getOrgUsers({ keyword, current: 1, pageSize: 2000 })
+      }
+      getRecentUsersApi={getRecentUsers}
       addRecentUsersApi={addRecentUsers}
       deleteRecentUserApi={delRecentUser}
       clearRecentUsersApi={clearRecentUsers}

@@ -17,9 +17,11 @@ import './index.less';
 
 export type UserSelectBaseProps = Omit<BusinessSelectProps<'user'>, 'type'> & {
   readonly?: boolean;
-  getOrgUsersApi: ApiType['api'];
-  getOrgUserApi: (id: any) => Promise<any>;
+  getUsersApi: ApiType['api'];
+  getUserDetailApi: (id: any) => Promise<any>;
   getOrgTreeApi: (params: any) => Promise<any[]>;
+  getOrgUsersApi: (params: { orgId: any }) => Promise<any[]>;
+  searchOrgUsersApi: (params: { keyword: any }) => Promise<any[]>;
   getRecentUsersApi: (params: any) => Promise<any[]>;
   addRecentUsersApi: (data: any) => Promise<any>;
   deleteRecentUserApi: (id: any) => Promise<any>;
@@ -41,9 +43,10 @@ export type UserSelectProps = Omit<BusinessSelectProps<'user'>, 'type'> & {
 
 const UserSelectBase = (props: UserSelectBaseProps) => {
   const {
-    getOrgUsersApi,
-    getOrgUserApi,
+    getUsersApi,
+    getUserDetailApi,
     getOrgTreeApi,
+    getOrgUsersApi,
     getRecentUsersApi,
     addRecentUsersApi,
     deleteRecentUserApi,
@@ -109,7 +112,7 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
         defaultVal.map(async (item: any) => {
           if (!item.extra) {
             try {
-              const res = await getOrgUserApi(item.value);
+              const res = await getUserDetailApi(item.value);
               return { ...item, extra: getUserTooltip(res) };
             } catch (error) {
               console.error('Failed to fetch user info:', error);
@@ -171,7 +174,7 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
         {
           type: 'user',
           pagination: true,
-          api: getOrgUsersApi,
+          api: getUsersApi,
         },
       ],
     });
@@ -240,7 +243,7 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
               label: '组织架构',
               children: (
                 <Organization
-                  getOrgUserApi={getOrgUsersApi}
+                  getOrgUsersApi={getOrgUsersApi}
                   getOrgTreeApi={getOrgTreeApi}
                   userItemFunc={UserItemWithClick}
                 ></Organization>
@@ -251,7 +254,7 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
               label: '高级搜索',
               children: (
                 <SearchMember
-                  getOrgUserApi={getOrgUsersApi}
+                  getOrgUsersApi={getOrgUsersApi}
                   userItemFunc={UserItemWithClick}
                 ></SearchMember>
               ),

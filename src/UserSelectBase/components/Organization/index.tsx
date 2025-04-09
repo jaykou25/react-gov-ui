@@ -6,7 +6,7 @@ import UsersBox from '../UsersBox';
 import './index.less';
 
 const Organization = (props: any) => {
-  const { getOrgUserApi, getOrgTreeApi, userItemFunc } = props;
+  const { getOrgUsersApi, getOrgTreeApi, userItemFunc } = props;
 
   const [userData, setUserData] = useState<any>([]);
   const [treeData, setTreeData] = useState<any>([]);
@@ -29,10 +29,8 @@ const Organization = (props: any) => {
 
   const onTreeSelect = async (selectedKeys: any, info: any) => {
     setRightLoading(true);
-    const result = await getOrgUserApi({
+    const result = await getOrgUsersApi({
       orgId: info.node.orgid,
-      current: 1,
-      pageSize: 20000,
     });
 
     setRightLoading(false);
