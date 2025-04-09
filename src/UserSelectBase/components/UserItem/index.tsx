@@ -58,7 +58,7 @@ const UserItem = (props: UserItemProps) => {
                 {props.userDescLeftRender(item)}
               </span>
               <span
-                title={item.userInfo.orgName}
+                title={props.userDescRightRender(item)}
                 style={{
                   overflow: 'hidden',
                   whiteSpace: 'nowrap',
