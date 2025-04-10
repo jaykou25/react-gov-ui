@@ -23,7 +23,7 @@ export type UserSelectBaseProps = Omit<BusinessSelectProps<'user'>, 'type'> & {
   getOrgUsersApi: (node: any) => Promise<any[]>;
   searchOrgUsersApi: (params: { keyword: any }) => Promise<any[]>;
   getRecentUsersApi: (params: any) => Promise<any[]>;
-  addRecentUsersApi: (data: any) => Promise<any>;
+  addRecentUsersApi?: (data: any) => Promise<any>;
   deleteRecentUserApi: (id: any) => Promise<any>;
   clearRecentUsersApi: () => Promise<any>;
   userTitleRender?: (item: any) => string | ReactNode;
@@ -34,6 +34,7 @@ export type UserSelectBaseProps = Omit<BusinessSelectProps<'user'>, 'type'> & {
   selectOptionLabelRender?: (item: any) => string;
   selectOptionValueRender?: (item: any) => string | number;
   tagColor?: string;
+  showRecent?: boolean;
 };
 
 export type UserSelectProps = Omit<BusinessSelectProps<'user'>, 'type'> & {
@@ -62,6 +63,7 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
     userDescRightRender = (item) => item.nickname,
     placeholder = '请输入关键字搜索',
     tagColor = 'blue',
+    showRecent = true,
     ...rest
   } = props;
 
@@ -76,7 +78,7 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
   >([]);
 
   // 控制 tab 切换
-  const [tabKey, setTabKey] = useState<string>('recent');
+  const [tabKey, setTabKey] = useState<string>(showRecent ? 'recent' : '1');
 
   const recentRef = useRef<any>(null);
 
@@ -86,12 +88,6 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
       if (props.onChange) props.onChange(selectedVal, {});
     } else {
       if (props.onChange) props.onChange(selectedVal[0], {});
-    }
-
-    // 添加到常用人
-    if (selectedVal.length > 0) {
-      addRecentUsersApi(selectedVal.map((i) => i.value));
-      recentRef.current?.fetchRecentUsers();
     }
 
     setModalOpen(false);
@@ -108,6 +104,13 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
       // 格式化成数组
       let defaultVal = props.value || [];
       defaultVal = Array.isArray(defaultVal) ? defaultVal : [defaultVal];
+
+      // 添加到常用人
+      if (defaultVal.length > 0 && addRecentUsersApi) {
+        addRecentUsersApi(defaultVal.map((i) => i.value)).then(() => {
+          recentRef.current?.fetchRecentUsers();
+        });
+      }
 
       const updatedVal = await Promise.all(
         defaultVal.map(async (item: any) => {
@@ -126,8 +129,10 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
       setSelectedVal(updatedVal);
     };
 
-    normalizeInitialValue();
-  }, [props.value]);
+    if (!props.readonly) {
+      normalizeInitialValue();
+    }
+  }, [props.value, props.readonly]);
 
   // 缓存这个组件
   const UserItemWithClick = useCallback(
@@ -192,6 +197,46 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
     }
   }
 
+  const recentItem = {
+    key: 'recent',
+    label: '最近',
+    children: (
+      <Recent
+        ref={recentRef}
+        getRecentUsersApi={getRecentUsersApi}
+        deleteRecentUserApi={deleteRecentUserApi}
+        clearRecentUsersApi={clearRecentUsersApi}
+        userItemFunc={UserItemWithClick}
+      />
+    ),
+  };
+
+  const orgItem = {
+    key: '1',
+    label: '组织架构',
+    children: (
+      <Organization
+        getOrgUsersApi={getOrgUsersApi}
+        getOrgTreeApi={getOrgTreeApi}
+        userItemFunc={UserItemWithClick}
+      ></Organization>
+    ),
+  };
+
+  const searchItem = {
+    key: '2',
+    label: '高级搜索',
+    children: (
+      <SearchMember
+        getOrgUsersApi={searchOrgUsersApi}
+        userItemFunc={UserItemWithClick}
+      ></SearchMember>
+    ),
+  };
+  const items = showRecent
+    ? [recentItem, orgItem, searchItem]
+    : [orgItem, searchItem];
+
   return (
     <div className="rgui-user-select">
       <Space.Compact style={{ width: '100%' }}>
@@ -225,42 +270,7 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
             setTabKey(val);
           }}
           type="card"
-          items={[
-            {
-              key: 'recent',
-              label: '最近',
-              children: (
-                <Recent
-                  ref={recentRef}
-                  getRecentUsersApi={getRecentUsersApi}
-                  deleteRecentUserApi={deleteRecentUserApi}
-                  clearRecentUsersApi={clearRecentUsersApi}
-                  userItemFunc={UserItemWithClick}
-                />
-              ),
-            },
-            {
-              key: '1',
-              label: '组织架构',
-              children: (
-                <Organization
-                  getOrgUsersApi={getOrgUsersApi}
-                  getOrgTreeApi={getOrgTreeApi}
-                  userItemFunc={UserItemWithClick}
-                ></Organization>
-              ),
-            },
-            {
-              key: '2',
-              label: '高级搜索',
-              children: (
-                <SearchMember
-                  getOrgUsersApi={searchOrgUsersApi}
-                  userItemFunc={UserItemWithClick}
-                ></SearchMember>
-              ),
-            },
-          ]}
+          items={items}
         />
 
         {/* 选中的tags */}

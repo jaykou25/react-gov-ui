@@ -13,6 +13,11 @@ nav:
 
 <code src="./demos/multi"></code>
 
+
+基础用法 - 只读
+
+<code src="./demos/readonly"></code>
+
 更改主题 - 红色
 
 <code src="./demos/theme"></code>
