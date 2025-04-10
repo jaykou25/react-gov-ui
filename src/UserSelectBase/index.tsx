@@ -40,6 +40,7 @@ export type UserSelectBaseProps = Omit<BusinessSelectProps<'user'>, 'type'> & {
 export type UserSelectProps = Omit<BusinessSelectProps<'user'>, 'type'> & {
   readonly?: boolean;
   tagColor?: string;
+  showRecent?: boolean;
 };
 
 const UserSelectBase = (props: UserSelectBaseProps) => {

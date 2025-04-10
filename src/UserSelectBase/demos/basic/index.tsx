@@ -9,7 +9,9 @@ const Basic = () => {
           title: '人员',
           dataIndex: 'user',
           initialValue: { value: 125, label: '高杰' },
-          renderFormItem: () => <UserSelect style={{ width: '200px' }} />,
+          renderFormItem: () => (
+            <UserSelect style={{ width: '200px' }} showRecent={false} />
+          ),
         },
       ]}
     />
