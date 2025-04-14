@@ -1,3 +1,4 @@
+export { default as SearchSelect } from './SearchSelect';
 export { default as UserSelectBase } from './UserSelectBase';
 
 /**
