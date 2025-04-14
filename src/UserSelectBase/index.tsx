@@ -1,23 +1,20 @@
 import { UsergroupAddOutlined } from '@ant-design/icons';
 import { Button, Modal, Space, Tabs, Tag, Tooltip } from 'antd';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BusinessSelectBuilder } from 'react-admin-kit';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Organization from './components/Organization';
 import Recent from './components/Recent';
 import SearchMember from './components/SearchMember';
 
 import type { ReactNode } from 'react';
-import type {
-  ApiType,
-  BusinessSelectProps,
-} from 'react-admin-kit/dist/BusinessSelectBuilder/types';
+import type { BusinessSelectProps } from 'react-admin-kit/dist/BusinessSelectBuilder/types';
 
+import SearchSelect from 'react-gov-ui/SearchSelect';
 import UserItem from './components/UserItem';
 import './index.less';
 
 export type UserSelectBaseProps = Omit<BusinessSelectProps<'user'>, 'type'> & {
   readonly?: boolean;
-  getUsersApi: ApiType['api'];
+  getUsersApi: (keyword: string) => Promise<any[]>;
   getUserDetailApi: (id: any) => Promise<any>;
   getOrgTreeApi: (params: any) => Promise<any[]>;
   getOrgUsersApi: (node: any) => Promise<any[]>;
@@ -57,7 +54,9 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
     readonly,
     selectOptionLabelRender = (item) => item.nickname,
     selectOptionValueRender = (item) => item.id,
-    selectInputLabelRender = (label?: string | number | ReactNode) => label,
+    selectInputLabelRender = (
+      label?: string | number | ReactNode | undefined,
+    ) => label,
     userTitleRender = (item) => item.nickname,
     userDescRender,
     userDescLeftRender = (item) => item.id,
@@ -175,18 +174,6 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
     [selectedVal],
   );
 
-  const BusinessSelect = useMemo(() => {
-    return BusinessSelectBuilder<'user'>({
-      apis: [
-        {
-          type: 'user',
-          pagination: true,
-          api: getUsersApi,
-        },
-      ],
-    });
-  }, []);
-
   // 只读模式
   if (readonly) {
     if (props.mode === 'multiple') {
@@ -241,15 +228,13 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
   return (
     <div className="rgui-user-select">
       <Space.Compact style={{ width: '100%' }}>
-        <BusinessSelect
-          type="user"
+        <SearchSelect
+          api={getUsersApi}
+          selectInputLabelRender={selectInputLabelRender}
+          selectOptionLabelRender={selectOptionLabelRender}
+          selectOptionValueRender={selectOptionValueRender}
           placeholder={placeholder}
           {...rest}
-          // 覆写下面的属性
-          suffixIcon={null}
-          labelInValue
-          labelRender={(obj) => selectInputLabelRender(obj.label)} // 这两个属性很容易混淆。labelRender 是 antd 的属性，用于更改 select input 中的文本。
-          renderLabel={selectOptionLabelRender} // renderLabel 是 rak 的属性，用于更改 select option(选项) 上的文本。
         />
         <Button
           icon={<UsergroupAddOutlined />}

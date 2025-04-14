@@ -16,12 +16,12 @@ const UserSelect = (props: UserSelectProps) => {
     <UserSelectBase
       userDescLeftRender={(item) => item.userInfo.empNo}
       userDescRightRender={(item) => item.userInfo.orgName}
-      getUsersApi={({ searchValue }) =>
+      getUsersApi={(keyword) =>
         getOrgUsers({
-          keyword: searchValue,
+          keyword,
           current: 1,
           pageSize: 2000,
-        })
+        }).then((res) => res.data)
       }
       getUserDetailApi={getOrgUser}
       getOrgTreeApi={getOrgTreeList}
