@@ -1,14 +1,24 @@
 ---
+order: 1
 nav:
   title: 组件
   order: 1
 ---
 
 # SearchSelect - 搜索型选择器
+受控模式
+<code src="./demos/controlled"></code>
 
-基础用法 - 单选
-<code src="./demos/basic"></code>
+非受控模式
+<code src="./demos/uncontrolled"></code>
 
-基础用法 - 多选
+用于表单
+<code title='单选' src="./demos/basic"></code>
 
-<code src="./demos/multiple"></code>
+<code title='单选有初始值' src="./demos/basic-initial"></code>
+
+
+<code title='多选' src="./demos/multi"></code>
+
+<code title='多选有初始值' src="./demos/multi-initial"></code>
+

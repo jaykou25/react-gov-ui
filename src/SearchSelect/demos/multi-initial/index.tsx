@@ -11,7 +11,8 @@ const ParentComponent = () => {
         {
           title: '人员',
           dataIndex: 'user',
-          renderFormItem: () => <SearchSelect api={mockApi} />,
+          initialValue: [{ value: 125, label: '高杰' }],
+          renderFormItem: () => <SearchSelect api={mockApi} mode="multiple" />,
         },
       ]}
     />

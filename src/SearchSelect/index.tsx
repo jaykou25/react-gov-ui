@@ -13,24 +13,26 @@ interface SearchSelectProps extends Omit<SelectProps, 'options' | 'onChange'> {
   ) => any; // 转换输入框显示的 label 的函数
 }
 
-const SearchSelect: React.FC<SearchSelectProps> = ({
-  api,
-  value,
-  onChange,
-  selectOptionLabelRender = (item) => item.name || item.nickname, // 默认 label 渲染
-  selectOptionValueRender = (item) => item.id, // 默认 value 渲染
-  selectInputLabelRender = (label) => label, // 默认输入框 label 渲染
-  mode,
-  placeholder = '请输入搜索关键字',
-  notFoundContent = '请输入搜索关键字',
-  ...rest
-}) => {
+const SearchSelect: React.FC<SearchSelectProps> = (props) => {
+  const {
+    api,
+    value: propValue,
+    onChange,
+    selectOptionLabelRender = (item) => item.name || item.nickname, // 默认 label 渲染
+    selectOptionValueRender = (item) => item.id, // 默认 value 渲染
+    selectInputLabelRender = (label) => label, // 默认输入框 label 渲染
+    mode,
+    placeholder = '请输入搜索关键字',
+    notFoundContent = '请输入搜索关键字',
+    ...rest
+  } = props;
+
   function valueToOptions() {
-    if (value) {
-      if (Array.isArray(value)) {
-        return value;
+    if (propValue) {
+      if (Array.isArray(propValue)) {
+        return propValue;
       } else {
-        return [value];
+        return [propValue];
       }
     }
 
@@ -48,8 +50,8 @@ const SearchSelect: React.FC<SearchSelectProps> = ({
     optionsRef.current = options; // 更新下拉项的引用
   }, [options]);
 
-  const isControlled = value !== undefined; // 判断是否为受控模式
-  const $value = isControlled ? value : internalValue;
+  const isControlled = 'value' in props; // 判断是否为受控模式
+  const value = isControlled ? propValue : internalValue;
 
   // 搜索时调用接口
   const handleSearch = useCallback(
@@ -58,12 +60,12 @@ const SearchSelect: React.FC<SearchSelectProps> = ({
 
       if (!keyword) {
         // 如果搜索框为空，保留选中的项
-        if (Array.isArray($value)) {
+        if (Array.isArray(value)) {
           // 多选模式
-          setOptions($value);
-        } else if ($value) {
+          setOptions(value);
+        } else if (value) {
           // 单选模式
-          setOptions([$value]);
+          setOptions([value]);
         } else {
           setOptions([]);
         }
@@ -79,12 +81,12 @@ const SearchSelect: React.FC<SearchSelectProps> = ({
 
         // 如果没有搜索结果，保留选中的项
         if (transformedOptions.length === 0) {
-          if (Array.isArray($value)) {
+          if (Array.isArray(value)) {
             // 多选模式
-            transformedOptions.push(...$value); // 保留选中的项
+            transformedOptions.push(...value); // 保留选中的项
           } else {
             // 单选模式
-            transformedOptions.push($value); // 保留选中的项
+            transformedOptions.push(value); // 保留选中的项
           }
         }
 
@@ -95,45 +97,45 @@ const SearchSelect: React.FC<SearchSelectProps> = ({
         console.error('搜索接口调用失败:', error);
       }
     },
-    [api, $value, selectOptionLabelRender, selectOptionValueRender],
+    [api, value, selectOptionLabelRender, selectOptionValueRender],
   );
 
   // 选中下拉项时的回调
   const handleChange = (selectedValue: any, options) => {
-    if (isControlled) {
-      onChange?.(selectedValue, options); // 触发父组件的 onChange 回调
-    } else {
+    if (!isControlled) {
       setInternalValue(selectedValue); // 更新内部状态
     }
+
+    onChange?.(selectedValue, options); // 触发父组件的 onChange 回调
   };
 
-  // $value 为空时，清空下拉项. eg: onClear 的时候
-  // $value 变动时, 如果下拉项里没有选中的项，则清空下拉项. eg: 人员弹窗里选了一个其它的人员
+  // value 为空时，清空下拉项. eg: onClear 的时候
+  // value 变动时, 如果下拉项里没有选中的项，则清空下拉项. eg: 人员弹窗里选了一个其它的人员
   useEffect(() => {
-    if (!$value) {
+    if (!value) {
       setOptions([]);
     } else {
-      if (Array.isArray($value)) {
+      if (Array.isArray(value)) {
         // 判断下拉项里是否有选中的项
-        const allExist = $value.every((item) => {
+        const allExist = value.every((item) => {
           return optionsRef.current.find((option) => {
             return option.value === item.value;
           });
         });
         if (!allExist) {
-          setOptions($value);
+          setOptions(value);
         }
       } else {
         // 单选模式
         const isExist = optionsRef.current.find((option) => {
-          return option.value === $value.value;
+          return option.value === value.value;
         });
         if (!isExist) {
-          setOptions([$value]);
+          setOptions([value]);
         }
       }
     }
-  }, [$value]);
+  }, [value]);
 
   return (
     <Select
@@ -146,7 +148,7 @@ const SearchSelect: React.FC<SearchSelectProps> = ({
       options={options} // 下拉项
       allowClear
       labelInValue
-      value={$value} // 根据模式选择受控或非受控值
+      value={value} // 根据模式选择受控或非受控值
       labelRender={(obj) => selectInputLabelRender(obj.label)} // 输入框显示的 label 渲染
       style={{ width: '100%' }}
       notFoundContent={notFoundContent}

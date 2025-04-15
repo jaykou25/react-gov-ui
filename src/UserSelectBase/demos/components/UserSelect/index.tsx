@@ -14,6 +14,10 @@ import {
 const UserSelect = (props: UserSelectProps) => {
   return (
     <UserSelectBase
+      selectOptionLabelRender={(item) =>
+        `${item.nickname} (${item.userInfo.orgName})`
+      }
+      selectInputLabelRender={(label) => label.split(' ')[0]}
       userDescLeftRender={(item) => item.userInfo.empNo}
       userDescRightRender={(item) => item.userInfo.orgName}
       getUsersApi={(keyword) =>

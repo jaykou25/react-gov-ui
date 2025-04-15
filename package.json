@@ -1,6 +1,6 @@
 {
   "name": "react-gov-ui",
-  "version": "1.1.4",
+  "version": "1.2.0",
   "license": "MIT",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",

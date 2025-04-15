@@ -10,11 +10,12 @@ const ModalFormDemo = () => {
       <ModalForm
         title="人员选择弹框"
         innerRef={innerRef}
+        onFinish={console.log}
         columns={[
           {
             title: 'user',
             dataIndex: 'user',
-            renderFormItem: () => <UserSelect mode="multiple" />,
+            renderFormItem: () => <UserSelect />,
           },
         ]}
       />
