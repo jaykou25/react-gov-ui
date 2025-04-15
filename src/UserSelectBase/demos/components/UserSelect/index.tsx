@@ -9,6 +9,8 @@ import {
   getOrgUser,
   getOrgUsers,
   getRecentUsers,
+  glUser,
+  organizaTreeAllNoDept,
 } from '@/apis';
 
 const UserSelect = (props: UserSelectProps) => {
@@ -50,4 +52,33 @@ const UserSelect = (props: UserSelectProps) => {
   );
 };
 
+// 用于三会决策
+const UserSelect2 = (props: UserSelectProps & { deptId?: string | number }) => {
+  return (
+    <UserSelectBase
+      userTitleRender={(item) => item.name}
+      userDescLeftRender={(item) => item.empNo}
+      userDescRightRender={(item) => item.orgName}
+      selectOptionLabelRender={(item) => `${item.name} (${item.orgName})`}
+      selectOptionValueRender={(item) => item.empId}
+      selectInputLabelRender={(label) => label?.split(' ')[0]}
+      getUsersApi={(keyword) => glUser({ name: keyword, orgId: props.deptId })}
+      getUserDetailApi={getOrgUser}
+      getOrgTreeApi={() =>
+        organizaTreeAllNoDept({ parentId: props.deptId || '' })
+      }
+      getOrgUsersApi={(node) => glUser({ orgId: node.key })}
+      searchOrgUsersApi={({ keyword }) =>
+        glUser({ name: keyword, orgId: props.deptId })
+      }
+      getRecentUsersApi={getRecentUsers}
+      addRecentUsersApi={addRecentUsers}
+      deleteRecentUserApi={delRecentUser}
+      clearRecentUsersApi={clearRecentUsers}
+      tagColor="red"
+      valueKey="empId"
+      {...props}
+    />
+  );
+};
 export default UserSelect;

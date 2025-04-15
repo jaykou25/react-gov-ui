@@ -57,3 +57,19 @@ export async function clearRecentUsers(): Promise<any> {
     method: 'post',
   });
 }
+
+// 组织架构人员
+export function glUser(params): Promise<any> {
+  return request(`/api/sysUser/glUser`, {
+    method: 'get',
+    params,
+  });
+}
+
+// 组织架构到公司
+export async function organizaTreeAllNoDept(params): Promise<any> {
+  return request(`/api/sysOrg/glOrg/treeAllNoDept`, {
+    method: 'get',
+    params,
+  });
+}

@@ -12,12 +12,16 @@ const Organization = (props: any) => {
   const [treeData, setTreeData] = useState<any>([]);
   const [loading, setLoading] = useState(false);
   const [rightLoading, setRightLoading] = useState(false);
+  const [expandedKeys, setExpandedKeys] = useState<any>([]);
 
   const getTreeData = () => {
     setLoading(true);
     getOrgTreeApi()
       .then((res) => {
         setTreeData(res);
+
+        // 设置展开一级的节点
+        setExpandedKeys((res || []).map((item: any) => item.id));
       })
       .finally(() => setLoading(false));
   };
@@ -41,15 +45,14 @@ const Organization = (props: any) => {
       <div className="rgui-organization">
         <UsersBox loading={loading} empty={false} style={{ height: '350px' }}>
           <Tree
+            expandedKeys={expandedKeys}
             fieldNames={{ key: 'id' }}
             showLine
             switcherIcon={<DownOutlined />}
-            defaultExpandedKeys={[]}
             onSelect={onTreeSelect}
             treeData={treeData}
           />
         </UsersBox>
-
         <UsersBox
           loading={rightLoading}
           empty={userData.length < 1}
