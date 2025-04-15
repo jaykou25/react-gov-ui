@@ -13,6 +13,7 @@ const Organization = (props: any) => {
   const [loading, setLoading] = useState(false);
   const [rightLoading, setRightLoading] = useState(false);
   const [expandedKeys, setExpandedKeys] = useState<any>([]);
+  const [selectedKeys, setSelectedKeys] = useState<any>([]);
 
   const getTreeData = () => {
     setLoading(true);
@@ -31,7 +32,14 @@ const Organization = (props: any) => {
     getTreeData();
   }, []);
 
-  const onTreeSelect = async (selectedKeys: any, info: any) => {
+  const onTreeSelect = async (keys: any, info: any) => {
+    // 如果点击已选中的节点，直接返回，不执行取消选中
+    if (info.selected === false) {
+      return;
+    }
+
+    setSelectedKeys(keys);
+
     setRightLoading(true);
     const result = await getOrgUsersApi(info.node);
 
@@ -46,9 +54,11 @@ const Organization = (props: any) => {
         <UsersBox loading={loading} empty={false} style={{ height: '350px' }}>
           <Tree
             expandedKeys={expandedKeys}
+            onExpand={setExpandedKeys}
             fieldNames={{ key: 'id' }}
             showLine
             switcherIcon={<DownOutlined />}
+            selectedKeys={selectedKeys}
             onSelect={onTreeSelect}
             treeData={treeData}
           />
