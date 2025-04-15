@@ -84,7 +84,7 @@ const SearchSelect: React.FC<SearchSelectProps> = (props) => {
           if (Array.isArray(value)) {
             // 多选模式
             transformedOptions.push(...value); // 保留选中的项
-          } else {
+          } else if (value) {
             // 单选模式
             transformedOptions.push(value); // 保留选中的项
           }
