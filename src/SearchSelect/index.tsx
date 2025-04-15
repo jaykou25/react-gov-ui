@@ -42,6 +42,7 @@ const SearchSelect: React.FC<SearchSelectProps> = ({
     { label: string; value: string | number }[]
   >(valueToOptions()); // 转换后的下拉项
   const optionsRef = useRef<any[]>(valueToOptions()); // 用于存储下拉项的引用，避免重复渲染
+  const requestIdRef = useRef(0);
 
   useEffect(() => {
     optionsRef.current = options; // 更新下拉项的引用
@@ -53,6 +54,8 @@ const SearchSelect: React.FC<SearchSelectProps> = ({
   // 搜索时调用接口
   const handleSearch = useCallback(
     async (keyword: string) => {
+      const currentRequestId = ++requestIdRef.current;
+
       if (!keyword) {
         // 如果搜索框为空，保留选中的项
         if (Array.isArray($value)) {
@@ -84,7 +87,10 @@ const SearchSelect: React.FC<SearchSelectProps> = ({
             transformedOptions.push($value); // 保留选中的项
           }
         }
-        setOptions(transformedOptions);
+
+        if (currentRequestId === requestIdRef.current) {
+          setOptions(transformedOptions);
+        }
       } catch (error) {
         console.error('搜索接口调用失败:', error);
       }
