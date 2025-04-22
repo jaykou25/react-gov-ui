@@ -13,6 +13,7 @@ const SearchMember = (props: any) => {
   const [pageSize, setPageSize] = useState(50);
   const [total, setTotal] = useState(0);
   const requestIdRef = useRef(0);
+  const isComposingRef = useRef(false);
 
   const handleSearch = (params: any = {}) => {
     const currentRequestId = ++requestIdRef.current;
@@ -28,6 +29,8 @@ const SearchMember = (props: any) => {
   };
 
   useEffect(() => {
+    if (isComposingRef.current) return;
+
     if (val) {
       handleSearch({ current: 1 });
     } else {
@@ -57,7 +60,17 @@ const SearchMember = (props: any) => {
     <div className="rgui-search-member">
       <Search
         value={val}
-        onChange={(e) => setVal(e.currentTarget.value)}
+        // 对于拼音输入法(IME)的各种事件触发顺序: onCompositionStart -> onChange -> onCompositionEnd
+        onChange={(e) => {
+          setVal(e.currentTarget.value);
+        }}
+        onCompositionStart={() => {
+          isComposingRef.current = true;
+        }}
+        onCompositionEnd={() => {
+          isComposingRef.current = false;
+          handleSearch();
+        }}
         placeholder="输入关键词搜索"
         enterButton
         allowClear
