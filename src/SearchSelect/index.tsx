@@ -3,7 +3,11 @@ import { Select } from 'antd';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 interface SearchSelectProps extends Omit<SelectProps, 'options' | 'onChange'> {
-  api: (keyword: string) => Promise<any[]>; // 搜索接口，返回 Promise
+  api: (params: {
+    keyword: string;
+    current: number;
+    pageSize: number;
+  }) => Promise<any[]>; // 搜索接口，返回 Promise
   value?: any | any[]; // 受控组件的值
   onChange?: (value: any | any[], options: any) => void; // 受控组件的回调
   selectOptionLabelRender?: (item: any) => string; // 转换下拉项 label 的函数
@@ -24,8 +28,11 @@ const SearchSelect: React.FC<SearchSelectProps> = (props) => {
     mode,
     placeholder = '请输入搜索关键字',
     notFoundContent = '请输入搜索关键字',
+    allowClear,
     ...rest
   } = props;
+
+  const _allowClear = allowClear !== undefined ? allowClear : true;
 
   function valueToOptions() {
     if (propValue) {
@@ -50,13 +57,22 @@ const SearchSelect: React.FC<SearchSelectProps> = (props) => {
     optionsRef.current = options; // 更新下拉项的引用
   }, [options]);
 
+  const [loading, setLoading] = useState(false); // 加载状态
+  const [current, setCurrent] = useState(1); // 当前页码
+  const pageSize = 30; // 每页条数
+  const [total, setTotal] = useState(0); // 总条数
+  const hasMore = total > options.length; // 是否还有更多数据
+  const keywordRef = useRef('');
+
   const isControlled = 'value' in props; // 判断是否为受控模式
   const value = isControlled ? propValue : internalValue;
 
   // 搜索时调用接口
   const handleSearch = useCallback(
-    async (keyword: string) => {
+    async (_keyword: string) => {
+      const keyword = _keyword.trim(); // 去除前后空格. 一种简单的方法防止拼音输入法多次请求
       const currentRequestId = ++requestIdRef.current;
+      keywordRef.current = keyword;
 
       if (!keyword) {
         // 如果搜索框为空，保留选中的项
@@ -69,12 +85,16 @@ const SearchSelect: React.FC<SearchSelectProps> = (props) => {
         } else {
           setOptions([]);
         }
+        setTotal(0);
+        setCurrent(1);
+        setLoading(false);
         return;
       }
 
       try {
-        const result = (await api(keyword)) || []; // 调用接口
-        const transformedOptions = result.map((item) => ({
+        setLoading(true);
+        const result: any = await api({ keyword, current: 1, pageSize });
+        const transformedOptions = (result.data || []).map((item) => ({
           label: selectOptionLabelRender(item),
           value: selectOptionValueRender(item),
         }));
@@ -92,9 +112,12 @@ const SearchSelect: React.FC<SearchSelectProps> = (props) => {
 
         if (currentRequestId === requestIdRef.current) {
           setOptions(transformedOptions);
+          setTotal(result.total || 0); // 更新总条数
+          setLoading(false);
         }
       } catch (error) {
         console.error('搜索接口调用失败:', error);
+        setLoading(false);
       }
     },
     [api, value, selectOptionLabelRender, selectOptionValueRender],
@@ -137,6 +160,42 @@ const SearchSelect: React.FC<SearchSelectProps> = (props) => {
     }
   }, [value]);
 
+  const toBottom = (target) => {
+    return target.scrollTop + target.clientHeight + 10 > target.scrollHeight;
+  };
+
+  const toBottomNeedLoad = (target) => {
+    return !loading && toBottom(target) && hasMore;
+  };
+
+  const handlePopupScroll = async (e) => {
+    e.persist();
+    const { target } = e;
+    if (toBottomNeedLoad(target)) {
+      const currentRequestId = ++requestIdRef.current;
+      setLoading(true);
+      const result: any = await api({
+        keyword: keywordRef.current,
+        current: current + 1,
+        pageSize,
+      });
+      const transformedOptions = (result.data || []).map((item) => ({
+        label: selectOptionLabelRender(item),
+        value: selectOptionValueRender(item),
+      }));
+
+      if (currentRequestId === requestIdRef.current) {
+        setOptions((prev) => {
+          const newOptions = [...prev, ...transformedOptions];
+          return newOptions;
+        });
+        setTotal(result.total || 0); // 更新总条数
+        setCurrent((prev) => prev + 1); // 更新当前页码
+        setLoading(false);
+      }
+    }
+  };
+
   return (
     <Select
       showSearch
@@ -146,13 +205,15 @@ const SearchSelect: React.FC<SearchSelectProps> = (props) => {
       onSearch={handleSearch} // 搜索时触发
       onChange={handleChange} // 选中时触发
       options={options} // 下拉项
-      allowClear
       labelInValue
       value={value} // 根据模式选择受控或非受控值
       labelRender={(obj) => selectInputLabelRender(obj.label)} // 输入框显示的 label 渲染
       style={{ width: '100%' }}
       notFoundContent={notFoundContent}
+      allowClear={_allowClear && !loading} // 是否允许清空
       {...rest} // 透传其他属性
+      loading={loading} // 加载状态
+      onPopupScroll={handlePopupScroll}
     />
   );
 };

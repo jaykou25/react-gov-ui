@@ -14,7 +14,11 @@ import './index.less';
 
 export type UserSelectBaseProps = Omit<BusinessSelectProps<'user'>, 'type'> & {
   readonly?: boolean;
-  getUsersApi: (keyword: string) => Promise<any[]>;
+  getUsersApi: (params: {
+    keyword: string;
+    current: number;
+    pageSize: number;
+  }) => Promise<any[]>;
   getUserDetailApi: (id: any) => Promise<any>;
   getOrgTreeApi: (params: any) => Promise<any[]>;
   getOrgUsersApi: (params: {

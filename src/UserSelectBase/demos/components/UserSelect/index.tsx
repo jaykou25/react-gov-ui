@@ -22,12 +22,12 @@ const UserSelect = (props: UserSelectProps) => {
       selectInputLabelRender={(label) => label.split(' ')[0]}
       userDescLeftRender={(item) => item.userInfo?.empNo}
       userDescRightRender={(item) => item.userInfo?.orgName}
-      getUsersApi={(keyword) =>
+      getUsersApi={({ keyword, current, pageSize }) =>
         getOrgUsers({
           keyword,
-          current: 1,
-          pageSize: 2000,
-        }).then((res) => res.data)
+          current,
+          pageSize,
+        })
       }
       getUserDetailApi={getOrgUser}
       getOrgTreeApi={getOrgTreeList}

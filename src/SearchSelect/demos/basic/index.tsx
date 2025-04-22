@@ -1,6 +1,6 @@
+import { getOrgUsers } from '@/apis';
 import { SchemaForm } from 'react-admin-kit';
 import { SearchSelect } from 'react-gov-ui';
-import { mockApi } from '../mock-api';
 
 const ParentComponent = () => {
   return (
@@ -11,7 +11,17 @@ const ParentComponent = () => {
         {
           title: '人员',
           dataIndex: 'user',
-          renderFormItem: () => <SearchSelect api={mockApi} />,
+          renderFormItem: () => (
+            <SearchSelect
+              api={({ keyword, current, pageSize }) =>
+                getOrgUsers({
+                  keyword,
+                  current,
+                  pageSize,
+                })
+              }
+            />
+          ),
         },
       ]}
     />
