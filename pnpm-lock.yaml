@@ -20,6 +20,9 @@ dependencies:
   react-admin-kit:
     specifier: ^0.5.10
     version: 0.5.10(antd@5.24.6)(rc-field-form@1.44.0)(react-dom@18.3.1)(react@18.3.1)(typescript@5.8.2)
+  react-infinite-scroll-component:
+    specifier: ^6.1.0
+    version: 6.1.0(react@18.3.1)
 
 devDependencies:
   '@commitlint/cli':
@@ -12139,6 +12142,15 @@ packages:
       shallowequal: 1.1.0
     dev: true
 
+  /react-infinite-scroll-component@6.1.0(react@18.3.1):
+    resolution: {integrity: sha512-SQu5nCqy8DxQWpnUVLx7V7b7LcA37aM7tvoWjTLZp1dk6EJibM5/4EJKzOnl07/BsM1Y40sKLuqjCwwH/xV0TQ==, tarball: https://registry.npmjs.org/react-infinite-scroll-component/-/react-infinite-scroll-component-6.1.0.tgz}
+    peerDependencies:
+      react: '>=16.0.0'
+    dependencies:
+      react: 18.3.1
+      throttle-debounce: 2.3.0
+    dev: false
+
   /react-intl@7.1.10(react@18.3.1)(typescript@5.8.2):
     resolution: {integrity: sha512-I5eB73BAqBbkd2M3wL8gTSE/xFvJRmxZcjS1HMnBT3KXya2PUSI7nDO/tlapX8khchoDoliliMsmyIURB/ww1g==}
     peerDependencies:
@@ -13600,6 +13612,11 @@ packages:
     dependencies:
       real-require: 0.1.0
     dev: true
+
+  /throttle-debounce@2.3.0:
+    resolution: {integrity: sha512-H7oLPV0P7+jgvrk+6mwwwBDmxTaxnu9HMXmloNLXwnNO0ZxZ31Orah2n8lU1eMPvsaowP2CX+USCgyovXfdOFQ==, tarball: https://registry.npmjs.org/throttle-debounce/-/throttle-debounce-2.3.0.tgz}
+    engines: {node: '>=8'}
+    dev: false
 
   /throttle-debounce@5.0.2:
     resolution: {integrity: sha512-B71/4oyj61iNH0KeCamLuE2rmKuTO5byTOSVwECM5FA7TiAiAW+UqTKZ9ERueC4qvgSttUhdmq1mXC3kJqGX7A==}

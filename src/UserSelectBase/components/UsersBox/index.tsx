@@ -7,11 +7,13 @@ type UsersBoxProps = {
   className?: string;
   style?: any;
   children: any;
+  id?: string;
 };
 
 const UsersBox = (props: UsersBoxProps) => {
   return (
     <div
+      id={props.id}
       className={`rgui-users-box ${props.className || ''}`}
       style={props.style}
     >

@@ -31,12 +31,12 @@ const UserSelect = (props: UserSelectProps) => {
       }
       getUserDetailApi={getOrgUser}
       getOrgTreeApi={getOrgTreeList}
-      getOrgUsersApi={(node) => {
+      getOrgUsersApi={({ node, current, pageSize }) => {
         return getOrgUsers({
           orgId: node.orgid,
-          current: 1,
-          pageSize: 2000,
-        }).then((res) => res.data);
+          current: current,
+          pageSize,
+        });
       }}
       searchOrgUsersApi={({ keyword, current, pageSize }) =>
         getOrgUsers({ keyword, current, pageSize })

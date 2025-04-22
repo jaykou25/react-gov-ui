@@ -17,7 +17,11 @@ export type UserSelectBaseProps = Omit<BusinessSelectProps<'user'>, 'type'> & {
   getUsersApi: (keyword: string) => Promise<any[]>;
   getUserDetailApi: (id: any) => Promise<any>;
   getOrgTreeApi: (params: any) => Promise<any[]>;
-  getOrgUsersApi: (node: any) => Promise<any[]>;
+  getOrgUsersApi: (params: {
+    node: any;
+    current: number;
+    pageSize: number;
+  }) => Promise<any[]>;
   searchOrgUsersApi: (params: {
     keyword: any;
     current: number;

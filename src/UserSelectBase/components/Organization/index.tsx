@@ -1,6 +1,7 @@
 import { DownOutlined } from '@ant-design/icons';
 import { Tree } from 'antd';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import InfiniteScroll from 'react-infinite-scroll-component';
 
 import UsersBox from '../UsersBox';
 import './index.less';
@@ -14,6 +15,12 @@ const Organization = (props: any) => {
   const [rightLoading, setRightLoading] = useState(false);
   const [expandedKeys, setExpandedKeys] = useState<any>([]);
   const [selectedKeys, setSelectedKeys] = useState<any>([]);
+  const [current, setCurrent] = useState(1);
+  const pageSize = 50;
+  const [total, setTotal] = useState(0);
+  const hasMore = total > userData.length;
+
+  const selectedNodeRef = useRef<any>(null);
 
   const getTreeData = () => {
     setLoading(true);
@@ -38,14 +45,42 @@ const Organization = (props: any) => {
       return;
     }
 
+    // 获取 UsersBox 的容器元素
+    const container = document.querySelector('#rguiOrgUserBox');
+    if (container) {
+      container.scrollTop = 0;
+    }
+
     setSelectedKeys(keys);
 
     setRightLoading(true);
-    const result = await getOrgUsersApi(info.node);
+    selectedNodeRef.current = info.node;
+    setCurrent(1);
+
+    const result = await getOrgUsersApi({
+      node: info.node,
+      current: 1,
+      pageSize,
+    });
 
     setRightLoading(false);
 
-    setUserData(result || []);
+    setUserData(result.data || []);
+    setTotal(result.total || 0);
+  };
+
+  const fetchMoreData = () => {
+    console.log('fetchMoreData', { current: current + 1 });
+
+    getOrgUsersApi({
+      node: selectedNodeRef.current,
+      current: current + 1,
+      pageSize,
+    }).then((res) => {
+      setUserData((prev: any) => [...prev, ...(res.data || [])]);
+      setTotal(res.total || 0);
+      setCurrent(current + 1);
+    });
   };
 
   return (
@@ -64,13 +99,26 @@ const Organization = (props: any) => {
           />
         </UsersBox>
         <UsersBox
+          id="rguiOrgUserBox"
           loading={rightLoading}
           empty={userData.length < 1}
           style={{ height: '350px' }}
         >
-          {userData.map((item: any) =>
-            userItemFunc({ item, style: { marginBottom: '10px' } }),
-          )}
+          <InfiniteScroll
+            scrollableTarget="rguiOrgUserBox"
+            dataLength={userData.length}
+            next={fetchMoreData}
+            hasMore={hasMore}
+            loader={
+              <div style={{ textAlign: 'center', color: '#acacac' }}>
+                加载中...
+              </div>
+            }
+          >
+            {userData.map((item: any) =>
+              userItemFunc({ item, style: { marginBottom: '10px' } }),
+            )}
+          </InfiniteScroll>
         </UsersBox>
       </div>
     </>
