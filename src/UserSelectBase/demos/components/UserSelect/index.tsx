@@ -20,8 +20,8 @@ const UserSelect = (props: UserSelectProps) => {
         `${item.nickname} (${item.userInfo.orgName})`
       }
       selectInputLabelRender={(label) => label.split(' ')[0]}
-      userDescLeftRender={(item) => item.userInfo.empNo}
-      userDescRightRender={(item) => item.userInfo.orgName}
+      userDescLeftRender={(item) => item.userInfo?.empNo}
+      userDescRightRender={(item) => item.userInfo?.orgName}
       getUsersApi={(keyword) =>
         getOrgUsers({
           keyword,
@@ -38,10 +38,8 @@ const UserSelect = (props: UserSelectProps) => {
           pageSize: 2000,
         }).then((res) => res.data);
       }}
-      searchOrgUsersApi={({ keyword }) =>
-        getOrgUsers({ keyword, current: 1, pageSize: 2000 }).then(
-          (res) => res.data,
-        )
+      searchOrgUsersApi={({ keyword, current, pageSize }) =>
+        getOrgUsers({ keyword, current, pageSize })
       }
       getRecentUsersApi={getRecentUsers}
       addRecentUsersApi={addRecentUsers}

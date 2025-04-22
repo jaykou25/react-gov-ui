@@ -18,7 +18,11 @@ export type UserSelectBaseProps = Omit<BusinessSelectProps<'user'>, 'type'> & {
   getUserDetailApi: (id: any) => Promise<any>;
   getOrgTreeApi: (params: any) => Promise<any[]>;
   getOrgUsersApi: (node: any) => Promise<any[]>;
-  searchOrgUsersApi: (params: { keyword: any }) => Promise<any[]>;
+  searchOrgUsersApi: (params: {
+    keyword: any;
+    current: number;
+    pageSize: number;
+  }) => Promise<any[]>;
   getRecentUsersApi: (params: any) => Promise<any[]>;
   addRecentUsersApi?: (data: any) => Promise<any>;
   deleteRecentUserApi: (id: any) => Promise<any>;
@@ -216,7 +220,7 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
     label: '高级搜索',
     children: (
       <SearchMember
-        getOrgUsersApi={searchOrgUsersApi}
+        searchOrgUsersApi={searchOrgUsersApi}
         userItemFunc={UserItemWithClick}
       ></SearchMember>
     ),

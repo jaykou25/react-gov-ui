@@ -12,7 +12,7 @@ type UsersBoxProps = {
 const UsersBox = (props: UsersBoxProps) => {
   return (
     <div
-      className={`rgui-users-box${props.className || ''}`}
+      className={`rgui-users-box ${props.className || ''}`}
       style={props.style}
     >
       <Spin spinning={props.loading}>

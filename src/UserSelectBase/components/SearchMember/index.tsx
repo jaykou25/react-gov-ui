@@ -1,21 +1,25 @@
-import { Input } from 'antd';
+import { Input, Pagination } from 'antd';
 import { useEffect, useState } from 'react';
 import UsersBox from '../UsersBox';
 import './index.less';
 const { Search } = Input;
 
 const SearchMember = (props: any) => {
-  const { getOrgUsersApi, userItemFunc } = props;
+  const { searchOrgUsersApi, userItemFunc } = props;
   const [val, setVal] = useState('');
   const [userData, setUserData] = useState<any>([]);
   const [loading, setLoading] = useState(false);
+  const [current, setCurrent] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
     if (val) {
       setLoading(true);
-      getOrgUsersApi({ keyword: val })
+      searchOrgUsersApi({ keyword: val, current: 1, pageSize })
         .then((res) => {
-          setUserData(res || []);
+          setUserData(res.data || []);
+          setTotal(res.total || 0);
         })
         .finally(() => setLoading(false));
     } else {
@@ -23,6 +27,28 @@ const SearchMember = (props: any) => {
       setLoading(false);
     }
   }, [val]);
+
+  const onPageChange = (page: number, pageSize: number) => {
+    // 获取 UsersBox 的容器元素
+    const container = document.querySelector(
+      '.rgui-search-member .rgui-users-box',
+    );
+    if (container) {
+      container.scrollTop = 0;
+    }
+
+    setCurrent(page);
+    setPageSize(pageSize);
+    if (val) {
+      setLoading(true);
+      searchOrgUsersApi({ keyword: val, current: page, pageSize })
+        .then((res) => {
+          setUserData(res.data || []);
+          setTotal(res.total || 0);
+        })
+        .finally(() => setLoading(false));
+    }
+  };
 
   return (
     <div className="rgui-search-member">
@@ -44,6 +70,15 @@ const SearchMember = (props: any) => {
             userItemFunc({ item, className: 'rgui-search-member-user-item' }),
           )}
         </div>
+        <Pagination
+          style={{ padding: '15px 0' }}
+          current={current}
+          pageSize={pageSize}
+          total={total}
+          onChange={onPageChange}
+          hideOnSinglePage
+          showSizeChanger={false}
+        />
       </UsersBox>
     </div>
   );
