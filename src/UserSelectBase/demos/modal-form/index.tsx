@@ -6,7 +6,15 @@ const ModalFormDemo = () => {
   const innerRef = useRef<any>(null);
   return (
     <div>
-      <Button onClick={() => innerRef.current.openModal('edit')}>open</Button>
+      <Button
+        onClick={() =>
+          innerRef.current.openModal('edit', {
+            user: { label: 'hi', value: '120' },
+          })
+        }
+      >
+        open
+      </Button>
       <ModalForm
         title="人员选择弹框"
         innerRef={innerRef}

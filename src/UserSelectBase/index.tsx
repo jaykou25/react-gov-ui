@@ -89,6 +89,7 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
   const [tabKey, setTabKey] = useState<string>(showRecent ? 'recent' : '1');
 
   const recentRef = useRef<any>(null);
+  const isMountedRef = useRef(false);
 
   // 弹窗确认函数
   const handleOk = () => {
@@ -101,30 +102,39 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
     setModalOpen(false);
   };
 
-  const getUserTooltip = (item: any) =>
-    `${userDescLeftRender(item)} ${userDescRightRender(item)}`;
+  const getUserTooltip = (item: any) => {
+    const arr = [userDescLeftRender(item), userDescRightRender(item)].filter(
+      (i) => !!i,
+    );
 
-  // todo: BusinessSelect 的频繁变动会引起网络请求， 因为 BusinessSelect onChange 抛出来的值里并不含有 extra
-  // 一种方法是改写 BusinessSelect 中的 onChange 方法， 把 extra 放到 onChange 的 value 里去。
-  // 但是对于多选模式(mode: multiple), onChange 的第二个参数是空数组，这个需要 rak 修改。
+    if (arr.length < 1) {
+      return undefined;
+    }
+
+    return arr.join(' ');
+  };
+
   useEffect(() => {
     const normalizeInitialValue = async () => {
       // 格式化成数组
       let defaultVal = props.value || [];
       defaultVal = Array.isArray(defaultVal) ? defaultVal : [defaultVal];
 
-      // 添加到常用人
-      if (defaultVal.length > 0 && addRecentUsersApi) {
-        addRecentUsersApi(defaultVal.map((i) => i.value)).then(() => {
-          recentRef.current?.fetchRecentUsers();
-        });
+      // 忽略初始值
+      if (isMountedRef.current) {
+        // 添加到常用人
+        if (defaultVal.length > 0 && addRecentUsersApi) {
+          addRecentUsersApi(defaultVal.map((i) => i.value)).then(() => {
+            recentRef.current?.fetchRecentUsers();
+          });
+        }
       }
 
       const updatedVal = await Promise.all(
         defaultVal.map(async (item: any) => {
           if (!item.extra) {
             try {
-              const res = await getUserDetailApi(item.value);
+              const res = (await getUserDetailApi(item.value)) || {};
               return { ...item, extra: getUserTooltip(res) };
             } catch (error) {
               console.error('Failed to fetch user info:', error);
@@ -141,6 +151,10 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
       normalizeInitialValue();
     }
   }, [props.value, props.readonly]);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+  }, []);
 
   // 缓存这个组件
   const UserItemWithClick = useCallback(
@@ -272,7 +286,7 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
         <div className="rgui-tags-main">
           {selectedVal.map((item) => {
             return (
-              <Tooltip key={item.value} title={item.extra}>
+              <Tooltip key={item.value} title={item.extra || item.label}>
                 <Tag
                   color={tagColor}
                   closable
