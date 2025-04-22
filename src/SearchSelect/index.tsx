@@ -63,6 +63,7 @@ const SearchSelect: React.FC<SearchSelectProps> = (props) => {
   const [total, setTotal] = useState(0); // 总条数
   const hasMore = total > options.length; // 是否还有更多数据
   const keywordRef = useRef('');
+  const [searchValue, setSearchValue] = useState(''); // 搜索框的值
 
   const isControlled = 'value' in props; // 判断是否为受控模式
   const value = isControlled ? propValue : internalValue;
@@ -70,6 +71,7 @@ const SearchSelect: React.FC<SearchSelectProps> = (props) => {
   // 搜索时调用接口
   const handleSearch = useCallback(
     async (_keyword: string) => {
+      setSearchValue(_keyword); // 更新搜索框的值
       const keyword = _keyword.trim(); // 去除前后空格. 一种简单的方法防止拼音输入法多次请求
       const currentRequestId = ++requestIdRef.current;
       keywordRef.current = keyword;
@@ -135,7 +137,7 @@ const SearchSelect: React.FC<SearchSelectProps> = (props) => {
   // value 为空时，清空下拉项. eg: onClear 的时候
   // value 变动时, 如果下拉项里没有选中的项，则清空下拉项. eg: 人员弹窗里选了一个其它的人员
   useEffect(() => {
-    if (!value) {
+    if (!value || (Array.isArray(value) && value.length === 0)) {
       setOptions([]);
     } else {
       if (Array.isArray(value)) {
@@ -213,6 +215,7 @@ const SearchSelect: React.FC<SearchSelectProps> = (props) => {
       allowClear={_allowClear && !loading} // 是否允许清空
       {...rest} // 透传其他属性
       loading={loading} // 加载状态
+      searchValue={searchValue} // 搜索框的值
       onPopupScroll={handlePopupScroll}
     />
   );
