@@ -21,6 +21,7 @@ const Organization = (props: any) => {
   const hasMore = total > userData.length;
 
   const selectedNodeRef = useRef<any>(null);
+  const requestIdRef = useRef(0);
 
   const getTreeData = () => {
     setLoading(true);
@@ -53,6 +54,7 @@ const Organization = (props: any) => {
 
     setSelectedKeys(keys);
 
+    const currentRequestId = ++requestIdRef.current;
     setRightLoading(true);
     selectedNodeRef.current = info.node;
     setCurrent(1);
@@ -65,8 +67,10 @@ const Organization = (props: any) => {
 
     setRightLoading(false);
 
-    setUserData(result.data || []);
-    setTotal(result.total || 0);
+    if (currentRequestId === requestIdRef.current) {
+      setUserData(result.data || []);
+      setTotal(result.total || 0);
+    }
   };
 
   const fetchMoreData = () => {
