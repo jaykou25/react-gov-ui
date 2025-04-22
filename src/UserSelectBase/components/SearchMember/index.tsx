@@ -1,5 +1,5 @@
 import { Input, Pagination } from 'antd';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import UsersBox from '../UsersBox';
 import './index.less';
 const { Search } = Input;
@@ -12,17 +12,26 @@ const SearchMember = (props: any) => {
   const [current, setCurrent] = useState(1);
   const [pageSize, setPageSize] = useState(50);
   const [total, setTotal] = useState(0);
+  const requestIdRef = useRef(0);
+
+  const handleSearch = (params: any = {}) => {
+    const currentRequestId = ++requestIdRef.current;
+    setLoading(true);
+    searchOrgUsersApi({ keyword: val, current, pageSize, ...params })
+      .then((res) => {
+        if (currentRequestId === requestIdRef.current) {
+          setUserData(res.data || []);
+          setTotal(res.total || 0);
+        }
+      })
+      .finally(() => setLoading(false));
+  };
 
   useEffect(() => {
     if (val) {
-      setLoading(true);
-      searchOrgUsersApi({ keyword: val, current: 1, pageSize })
-        .then((res) => {
-          setUserData(res.data || []);
-          setTotal(res.total || 0);
-        })
-        .finally(() => setLoading(false));
+      handleSearch({ current: 1 });
     } else {
+      ++requestIdRef.current;
       setUserData([]);
       setLoading(false);
     }
@@ -40,13 +49,7 @@ const SearchMember = (props: any) => {
     setCurrent(page);
     setPageSize(pageSize);
     if (val) {
-      setLoading(true);
-      searchOrgUsersApi({ keyword: val, current: page, pageSize })
-        .then((res) => {
-          setUserData(res.data || []);
-          setTotal(res.total || 0);
-        })
-        .finally(() => setLoading(false));
+      handleSearch();
     }
   };
 
