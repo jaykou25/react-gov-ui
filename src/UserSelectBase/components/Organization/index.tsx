@@ -101,12 +101,15 @@ const Organization = (props: any) => {
           />
         </UsersBox>
         <UsersBox
+          // todo: 这里的 id 不可靠, 页面中可能会有多个组件.
+          // 目前是 Modal 上加了 destroyOnClose
           id="rguiOrgUserBox"
           loading={rightLoading}
           empty={userData.length < 1}
           style={{ height: '350px' }}
         >
           <InfiniteScroll
+            // todo
             scrollableTarget="rguiOrgUserBox"
             dataLength={userData.length}
             next={fetchMoreData}

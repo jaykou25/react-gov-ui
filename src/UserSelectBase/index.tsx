@@ -253,6 +253,7 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
       <Modal
         width={1000}
         maskClosable={false}
+        destroyOnClose
         title={'人员选择弹框'}
         open={modalOpen}
         onOk={handleOk}
