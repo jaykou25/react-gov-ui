@@ -74,8 +74,6 @@ const Organization = (props: any) => {
   };
 
   const fetchMoreData = () => {
-    console.log('fetchMoreData', { current: current + 1 });
-
     getOrgUsersApi({
       node: selectedNodeRef.current,
       current: current + 1,

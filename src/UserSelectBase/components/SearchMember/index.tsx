@@ -1,5 +1,6 @@
-import { Input, Pagination } from 'antd';
+import { Input } from 'antd';
 import { useEffect, useRef, useState } from 'react';
+import InfiniteScroll from 'react-infinite-scroll-component';
 import UsersBox from '../UsersBox';
 import './index.less';
 const { Search } = Input;
@@ -10,19 +11,21 @@ const SearchMember = (props: any) => {
   const [userData, setUserData] = useState<any>([]);
   const [loading, setLoading] = useState(false);
   const [current, setCurrent] = useState(1);
-  const [pageSize, setPageSize] = useState(50);
+  const pageSize = 50;
   const [total, setTotal] = useState(0);
+  const hasMore = total > userData.length;
   const requestIdRef = useRef(0);
   const isComposingRef = useRef(false);
 
-  const handleSearch = (params: any = {}) => {
+  const handleSearch = () => {
     const currentRequestId = ++requestIdRef.current;
     setLoading(true);
-    searchOrgUsersApi({ keyword: val, current, pageSize, ...params })
+    searchOrgUsersApi({ keyword: val, current: 1, pageSize })
       .then((res) => {
         if (currentRequestId === requestIdRef.current) {
           setUserData(res.data || []);
           setTotal(res.total || 0);
+          setCurrent(1);
         }
       })
       .finally(() => setLoading(false));
@@ -32,7 +35,7 @@ const SearchMember = (props: any) => {
     if (isComposingRef.current) return;
 
     if (val) {
-      handleSearch({ current: 1 });
+      handleSearch();
     } else {
       ++requestIdRef.current;
       setUserData([]);
@@ -40,20 +43,18 @@ const SearchMember = (props: any) => {
     }
   }, [val]);
 
-  const onPageChange = (page: number, pageSize: number) => {
-    // 获取 UsersBox 的容器元素
-    const container = document.querySelector(
-      '.rgui-search-member .rgui-users-box',
-    );
-    if (container) {
-      container.scrollTop = 0;
-    }
+  const fetchMoreData = () => {
+    const currentRequestId = ++requestIdRef.current;
 
-    setCurrent(page);
-    setPageSize(pageSize);
-    if (val) {
-      handleSearch();
-    }
+    searchOrgUsersApi({ keyword: val, current: current + 1, pageSize }).then(
+      (res) => {
+        if (currentRequestId === requestIdRef.current) {
+          setUserData((prev: any) => [...prev, ...(res.data || [])]);
+          setTotal(res.total || 0);
+          setCurrent(current + 1);
+        }
+      },
+    );
   };
 
   return (
@@ -77,24 +78,28 @@ const SearchMember = (props: any) => {
       />
 
       <UsersBox
+        id="rguiSearchMemberUserBox"
         empty={userData.length < 1}
         loading={loading}
         style={{ marginTop: '15px', paddingLeft: '10px' }}
       >
-        <div className="rgui-search-content-grid">
-          {userData.map((item: any) =>
-            userItemFunc({ item, className: 'rgui-search-member-user-item' }),
-          )}
-        </div>
-        <Pagination
-          style={{ padding: '15px 0' }}
-          current={current}
-          pageSize={pageSize}
-          total={total}
-          onChange={onPageChange}
-          hideOnSinglePage
-          showSizeChanger={false}
-        />
+        <InfiniteScroll
+          scrollableTarget="rguiSearchMemberUserBox"
+          dataLength={userData.length}
+          next={fetchMoreData}
+          hasMore={hasMore}
+          loader={
+            <div style={{ textAlign: 'center', color: '#acacac' }}>
+              加载中...
+            </div>
+          }
+        >
+          <div className="rgui-search-content-grid">
+            {userData.map((item: any) =>
+              userItemFunc({ item, className: 'rgui-search-member-user-item' }),
+            )}
+          </div>
+        </InfiniteScroll>
       </UsersBox>
     </div>
   );
