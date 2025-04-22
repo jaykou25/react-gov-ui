@@ -90,6 +90,7 @@ const Organization = (props: any) => {
       <div className="rgui-organization">
         <UsersBox loading={loading} empty={false} style={{ height: '350px' }}>
           <Tree
+            style={{ minHeight: '300px' }} // 保持 loading 居中
             expandedKeys={expandedKeys}
             onExpand={setExpandedKeys}
             fieldNames={{ key: 'id' }}
