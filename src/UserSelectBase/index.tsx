@@ -263,6 +263,7 @@ const UserSelectBase = (props: UserSelectBaseProps) => {
           {...rest}
         />
         <Button
+          disabled={props.disabled}
           icon={<UsergroupAddOutlined />}
           onClick={() => setModalOpen(true)}
         ></Button>

@@ -12,6 +12,13 @@ const Basic = () => {
           dataIndex: 'user',
           renderFormItem: () => <UserSelect style={{ width: '200px' }} />,
         },
+        {
+          title: '人员禁用',
+          dataIndex: 'userDisabled',
+          renderFormItem: () => (
+            <UserSelect disabled style={{ width: '200px' }} />
+          ),
+        },
       ]}
     />
   );

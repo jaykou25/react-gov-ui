@@ -23,6 +23,22 @@ const ParentComponent = () => {
             />
           ),
         },
+        {
+          title: '人员禁用',
+          dataIndex: 'userDisabled',
+          renderFormItem: () => (
+            <SearchSelect
+              disabled
+              api={({ keyword, current, pageSize }) =>
+                getOrgUsers({
+                  keyword,
+                  current,
+                  pageSize,
+                })
+              }
+            />
+          ),
+        },
       ]}
     />
   );
